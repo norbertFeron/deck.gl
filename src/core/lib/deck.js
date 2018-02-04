@@ -30,6 +30,7 @@ import PropTypes from 'prop-types';
 import assert from 'assert';
 /* global document */
 
+// TODO - implement more portable cursor handling (see #1320)
 const PREFIX = '-webkit-';
 const CURSOR = {
   GRABBING: `${PREFIX}grabbing`,
