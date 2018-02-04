@@ -38,6 +38,9 @@ const CURSOR = {
   POINTER: 'pointer'
 };
 
+// TODO - temporary constant until dynamic size feature is completed
+const DEFAULT_WINDOW_SIZE = 500;
+
 function noop() {}
 
 const propTypes = {
@@ -108,8 +111,8 @@ const defaultProps = Object.assign({}, TransitionManager.defaultProps, {
   id: 'deckgl-overlay',
 
   // Size
-  width: 500,
-  height: 500,
+  width: DEFAULT_WINDOW_SIZE,
+  height: DEFAULT_WINDOW_SIZE,
 
   pickingRadius: 0,
   layerFilter: null,
@@ -189,8 +192,8 @@ export default class Deck {
 
   getSize() {
     return {
-      width: this.props.width || 500,
-      height: this.props.height || 500
+      width: this.props.width || DEFAULT_WINDOW_SIZE,
+      height: this.props.height || DEFAULT_WINDOW_SIZE
     };
   }
 
