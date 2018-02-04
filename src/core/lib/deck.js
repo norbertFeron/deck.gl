@@ -22,20 +22,29 @@ import LayerManager from '../lib/layer-manager';
 import EffectManager from '../experimental/lib/effect-manager';
 import Effect from '../experimental/lib/effect';
 import WebMercatorViewport from '../viewports/web-mercator-viewport';
+import TransitionManager from '../lib/transition-manager';
 
-import {EventManager} from 'mjolnir.js';
 import {GL, AnimationLoop, createGLContext, setParameters} from 'luma.gl';
 
 import PropTypes from 'prop-types';
 import assert from 'assert';
 /* global document */
 
+const PREFIX = '-webkit-';
+const CURSOR = {
+  GRABBING: `${PREFIX}grabbing`,
+  GRAB: `${PREFIX}grab`,
+  POINTER: 'pointer'
+};
+
 function noop() {}
 
 const propTypes = {
   id: PropTypes.string,
-  width: PropTypes.number.isRequired,
-  height: PropTypes.number.isRequired,
+
+  width: PropTypes.number,
+  height: PropTypes.number,
+
   layers: PropTypes.array, // Array can contain falsy values
   views: PropTypes.array, // Array can contain falsy values
   viewports: PropTypes.array, // Deprecated: Array can contain falsy values
@@ -51,13 +60,56 @@ const propTypes = {
   onLayerHover: PropTypes.func,
   useDevicePixels: PropTypes.bool,
 
-  // Debug settings
+  // Viewport props (TODO - should only support these on the react component)
+  longitude: PropTypes.number, // The longitude of the center of the map.
+  latitude: PropTypes.number, // The latitude of the center of the map.
+  zoom: PropTypes.number, // The tile zoom level of the map.
+  bearing: PropTypes.number, // Specify the bearing of the viewport
+  pitch: PropTypes.number, // Specify the pitch of the viewport
+  altitude: PropTypes.number, // Altitude of camera. Default 1.5 "screen heights"
+  position: PropTypes.array, // Camera position for FirstPersonViewport
+
+  // Viewport constraints
+  // TODO - too many props, define constraints object
+  maxZoom: PropTypes.number, // Max zoom level
+  minZoom: PropTypes.number, // Min zoom level
+  maxPitch: PropTypes.number, // Max pitch in degrees
+  minPitch: PropTypes.number, // Min pitch in degrees
+
+  // onViewStateChange: PropTypes.func, // callback, fires when user interacts with the view
+  onViewportChange: PropTypes.func, // callback, fires when user interacts with the view
+
+  // Viewport transition
+  transitionDuration: PropTypes.number, // transition duration for viewport change
+  transitionInterpolator: PropTypes.object, // ViewportTransitionInterpolator for custom transitions
+  transitionInterruption: PropTypes.number, // type of interruption of current transition on update
+  transitionEasing: PropTypes.func, // easing function
+  onTransitionStart: PropTypes.func, // transition status update functions
+  onTransitionInterrupt: PropTypes.func,
+  onTransitionEnd: PropTypes.func,
+
+  // Enables control event handling
+  scrollZoom: PropTypes.bool, // Scroll to zoom
+  dragPan: PropTypes.bool, // Drag to pan
+  dragRotate: PropTypes.bool, // Drag to rotate
+  doubleClickZoom: PropTypes.bool, // Double click to zoom
+  touchZoomRotate: PropTypes.bool, // Pinch to zoom / rotate
+
+  // Accessor that returns a cursor style to show interactive state
+  getCursor: PropTypes.func,
+
+  // Debug props
   debug: PropTypes.bool,
   drawPickingColors: PropTypes.bool
 };
 
-const defaultProps = {
+const defaultProps = Object.assign({}, TransitionManager.defaultProps, {
   id: 'deckgl-overlay',
+
+  // Size
+  width: 500,
+  height: 500,
+
   pickingRadius: 0,
   layerFilter: null,
   glOptions: {},
@@ -71,19 +123,33 @@ const defaultProps = {
   onLayerHover: null,
   useDevicePixels: true,
 
+  // Controller props
+  onViewportChange: null,
+
+  scrollZoom: true,
+  dragPan: true,
+  dragRotate: true,
+  doubleClickZoom: true,
+  touchZoomRotate: true,
+  getCursor: ({isDragging}) => (isDragging ? CURSOR.GRABBING : CURSOR.GRAB),
+
+  // Debug props
   debug: false,
   drawPickingColors: false
-};
+});
 
 // TODO - should this class be joined with `LayerManager`?
 export default class Deck {
   constructor(props) {
     props = Object.assign({}, defaultProps, props);
+    this.props = props;
 
     this.state = {};
     this.needsRedraw = true;
     this.layerManager = null;
+    this.eventManager = null;
     this.effectManager = null;
+    this.transitionManager = new TransitionManager(this.props);
     this.viewports = [];
 
     // Bind methods
@@ -102,9 +168,8 @@ export default class Deck {
     props = Object.assign({}, this.props, props);
     this.props = props;
 
-    this._setLayerManagerProps(props);
-
     // TODO - unify setParameters/setOptions/setProps etc naming.
+    this._setLayerManagerProps(props);
     const {useDevicePixels} = props;
     this.animationLoop.setViewParameters({useDevicePixels});
   }
@@ -120,6 +185,13 @@ export default class Deck {
   }
 
   // Public API
+
+  getSize() {
+    return {
+      width: this.props.width || 500,
+      height: this.props.height || 500
+    };
+  }
 
   pickObject({x, y, radius = 0, layerIds = null}) {
     const selectedInfos = this.layerManager.pickObject({x, y, radius, layerIds, mode: 'query'});
@@ -218,6 +290,19 @@ export default class Deck {
     });
   }
 
+  _updateSize(gl) {
+    // Get canvas from debug context (TODO move to luma.gl)
+    gl = (gl && gl.state && gl.state.gl) || gl;
+    const canvas = gl && gl.canvas;
+    // Check if size changed
+    if (canvas && (canvas.clientWidth !== this.width || canvas.clientHeight !== this.height)) {
+      this.setProps({
+        width: canvas.clientWidth,
+        height: canvas.clientHeight
+      });
+    }
+  }
+
   // Callbacks
 
   _onRendererInitialized({gl, canvas}) {
@@ -232,9 +317,7 @@ export default class Deck {
     this.props.onWebGLInitialized(gl);
 
     // Note: avoid React setState due GL animation loop / setState timing issue
-    this.layerManager = new LayerManager(gl, {
-      eventManager: new EventManager(canvas)
-    });
+    this.layerManager = new LayerManager(gl, {eventManager: this.eventManager});
 
     this.effectManager = new EffectManager({gl, layerManager: this.layerManager});
 
@@ -246,6 +329,8 @@ export default class Deck {
   }
 
   _onRenderFrame({gl}) {
+    this._updateSize(gl);
+
     const redrawReason = this.layerManager.needsRedraw({clearRedrawFlags: true});
     if (!redrawReason) {
       return;
