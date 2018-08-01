@@ -4,17 +4,17 @@ import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import autobind from 'autobind-decorator';
 
-import Map from './map';
+import DemoLauncher from './demo-launcher';
 import InfoPanel from './info-panel';
 import MarkdownPage from './markdown-page';
-import {loadContent, updateMap} from '../actions/app-actions';
+import {loadContent, updateMapSize} from '../actions/app-actions';
 
 class Page extends Component {
 
   constructor(props) {
     super(props);
     this.state = {
-      content: this._loadContent(props.route.content)
+      content: this._loadContent(props.content)
     };
   }
 
@@ -24,10 +24,10 @@ class Page extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const {route} = nextProps;
-    if (this.props.route !== route) {
+    const {content} = nextProps;
+    if (this.props.content !== content) {
       this.setState({
-        content: this._loadContent(route.content)
+        content: this._loadContent(content)
       });
     }
   }
@@ -44,18 +44,19 @@ class Page extends Component {
   }
 
   @autobind _resizeMap() {
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    this.props.updateMap({
-      width: w <= 768 ? w : w - 240,
-      height: h - 64
-    });
+    const page = document.querySelector('.page');
+    if (page) {
+      this.props.updateMapSize({
+        width: page.clientWidth,
+        height: page.clientHeight
+      });
+    }
   }
 
   @autobind _renderDemo(name, sourceLink) {
     return (
       <div className="demo">
-        <Map demo={name} />
+        <DemoLauncher demo={name} />
         <InfoPanel demo={name} >
 
           {sourceLink && (<div className="source-link">
@@ -69,17 +70,19 @@ class Page extends Component {
 
   // replaces the current query string in react-router
   @autobind _updateQueryString(queryString) {
-    const {location: {pathname, search}} = this.props;
+    const {history} = this.props;
+    const {location, search} = history;
+
     if (search !== queryString) {
-      this.context.router.replace({
-        pathname,
+      history.replace({
+        pathname: location.pathname,
         search: queryString
       });
     }
   }
 
   render() {
-    const {contents, location: {query}} = this.props;
+    const {contents, location: {search}} = this.props;
     const {content} = this.state;
 
     let child;
@@ -88,7 +91,7 @@ class Page extends Component {
       child = this._renderDemo(content.demo, content.code);
     } else if (typeof content === 'string') {
       child = (<MarkdownPage content={contents[content]}
-        query={query}
+        query={search}
         updateQueryString={this._updateQueryString}
         renderDemo={this._renderDemo} />);
     }
@@ -97,14 +100,10 @@ class Page extends Component {
   }
 }
 
-Page.contextTypes = {
-  router: PropTypes.object
-};
-
 function mapStateToProps(state) {
   return {
     contents: state.contents
   };
 }
 
-export default connect(mapStateToProps, {loadContent, updateMap})(Page);
+export default connect(mapStateToProps, {loadContent, updateMapSize})(Page);

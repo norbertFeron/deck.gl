@@ -17,14 +17,29 @@ const App = ({data, viewport}) => {
   /**
    * Data format:
    * [
-   *   {sourcePosition: [-122.4, 37.7], targetPosition: [-122.5, 37.8], color: [255, 0, 0]},
+   *   {
+   *     inbound: 72633,
+   *     outbound: 74735,
+   *     from: {
+   *       name: '19th St. Oakland (19TH)',
+   *       coordinates: [-122.269029, 37.80787]
+   *     },
+   *     to: {
+   *       name: '12th St. Oakland City Center (12TH)',
+   *       coordinates: [-122.271604, 37.803664]
+   *   },
    *   ...
    * ]
    */
   const layer = new LineLayer({
     id: 'line-layer',
     data,
-    strokeWdith: 2
+    pickable: true,
+    getStrokeWidth: 12,
+    getSourcePosition: d => d.from.coordinates,
+    getTargetPosition: d => d.to.coordinates,
+    getColor: d => [Math.sqrt(d.inbound + d.outbound), 140, 0],
+    onHover: ({object}) => setTooltip(`${object.from.name} to ${object.to.name}`)
   });
 
   return (<DeckGL {...viewport} layers={[layer]} />);
@@ -37,42 +52,47 @@ Inherits from all [Base Layer](/docs/api-reference/layer.md) properties.
 
 ### Render Options
 
-##### `strokeWidth` (Number, optional)
-
-- Default: `1`
-
 The stroke width used to draw each line. Unit is pixels.
 
 ##### `fp64` (Boolean, optional)
 
-- Default: `false`
+* Default: `false`
 
 Whether the layer should be rendered in high-precision 64-bit mode
 
 ### Data Accessors
 
-##### `getSourcePosition` (Function, optional)
+##### `getSourcePosition` (Function, optional) ![transition-enabled](https://img.shields.io/badge/transition-enabled-green.svg?style=flat-square")
 
-- Default: `object => object.sourcePosition`
+* Default: `object => object.sourcePosition`
 
 Method called to retrieve the source position of each object.
 
-##### `getTargetPosition` (Function, optional)
+##### `getTargetPosition` (Function, optional) ![transition-enabled](https://img.shields.io/badge/transition-enabled-green.svg?style=flat-square")
 
-- Default: `object => object.targetPosition`
+* Default: `object => object.targetPosition`
 
 Method called to retrieve the target position of each object.
 
-##### `getColor` (Function, optional)
+##### `getColor` (Function|Array, optional) ![transition-enabled](https://img.shields.io/badge/transition-enabled-green.svg?style=flat-square")
 
-- Default: `object => object.color`
+* Default: `[0, 0, 0, 255]`
 
-Method called to determine the rgba color of the source.
-* If the alpha parameter is not provided, it will be set to `255`.
-* If the method does not return a value for the given object, fallback to
-`[0, 0, 0, 255]`.
+The rgba color of each object, in `r, g, b, [a]`. Each component is in the 0-255 range.
+
+* If an array is provided, it is used as the color for all objects.
+* If a function is provided, it is called on each object to retrieve its color.
+
+##### `getStrokeWidth` (Function|Number, optional) ![transition-enabled](https://img.shields.io/badge/transition-enabled-green.svg?style=flat-square")
+
+* Default: `1`
+
+The stroke width of each object, in pixels.
+
+* If a number is provided, it is used as the stroke width for all objects.
+* If a function is provided, it is called on each object to retrieve its stroke width.
 
 ## Source
 
-[src/core-layers/line-layer](https://github.com/uber/deck.gl/tree/5.1-release/src/core-layers/line-layer)
+[modules/core/src/core-layers/line-layer](https://github.com/uber/deck.gl/tree/master/modules/layers/src/line-layer)
 

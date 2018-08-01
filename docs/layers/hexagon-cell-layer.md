@@ -1,5 +1,5 @@
 <div align="center">
-  <img height="300" src="/demo/src/static/images/hexagon-cell-layer.png" />
+  <img height="300" src="/website/src/static/images/hexagon-cell-layer.png" />
 </div>
 
 <p class="badges">
@@ -64,14 +64,14 @@ they will be used to calculate primitive hexagon instead of `hexagonVertices`
 
 ##### `coverage` (Number, optional)
 
-- Default: `1`
+* Default: `1`
 
 Hexagon radius multiplier, between 0 - 1. The radius of hexagon is calculated by
 `coverage * radius`
 
 ##### `elevationScale` (Number, optional)
 
-- Default: `1`
+* Default: `1`
 
 Hexagon elevation multiplier. The elevation of hexagon is calculated by
 `elevationScale * getElevation(d)`. `elevationScale` is a handy property
@@ -79,13 +79,13 @@ to scale all hexagon elevations without updating the data.
 
 ##### `extruded` (Boolean, optional)
 
-- Default: `true`
+* Default: `true`
 
 Whether to extrude hexagon. If se to false, all hexagons will be set to flat.
 
 ##### `fp64` (Boolean, optional)
 
-- Default: `false`
+* Default: `false`
 
 Whether the layer should be rendered in high-precision 64-bit mode
 
@@ -96,27 +96,29 @@ Be aware that this prop will likely be changed in a future version of deck.gl.
 
 ### Data Accessors
 
-##### `getCentroid` (Function, optional)
+##### `getCentroid` (Function, optional) ![transition-enabled](https://img.shields.io/badge/transition-enabled-green.svg?style=flat-square")
 
-- Default: `object => object.centroid`
+* Default: `object => object.centroid`
 
 Method called to retrieve the centroid of each hexagon. Centorid should be
 set to [lon, lat]
 
-##### `getColor` (Function, optional)
+##### `getColor` (Function|Array, optional) ![transition-enabled](https://img.shields.io/badge/transition-enabled-green.svg?style=flat-square")
 
-- Default: `object => object.color`
+* Default: `[255, 0, 255, 255]`
 
-Method called to retrieve the color of each object. Color should be set to
-[r, g, b, a] with each number between 0-255.
+The rgba color of each object, in `r, g, b, [a]`. Each component is in the 0-255 range.
 
-##### `getElevation` (Function, optional)
+* If an array is provided, it is used as the color for all objects.
+* If a function is provided, it is called on each object to retrieve its color.
 
-- Default: `object => object.elevation`
+##### `getElevation` (Function, optional) ![transition-enabled](https://img.shields.io/badge/transition-enabled-green.svg?style=flat-square")
+
+* Default: `1000`
 
 Method called to retrieve the elevation of each object. 1 unit approximate to 100 meters.
 
 ## Source
 
-[src/core-layers/hexagon-cell-layer](https://github.com/uber/deck.gl/tree/5.1-release/src/core-layers/hexagon-cell-layer)
+[modules/core/src/core-layers/hexagon-cell-layer](https://github.com/uber/deck.gl/tree/master/modules/layers/src/hexagon-cell-layer)
 

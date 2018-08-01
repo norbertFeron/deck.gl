@@ -1,9 +1,9 @@
 importScripts('./util.js');
 let total = 0;
+const result = [];
 
 onmessage = function(e) {
   const lines = e.data.text.split('\n');
-  const result = [];
 
   lines.forEach(function(line) {
     if (!line) {
@@ -13,15 +13,18 @@ onmessage = function(e) {
     const coords = decodePolyline(line.slice(2));
     for (let i = 0; i < coords.length; i++) {
       const c = coords[i];
-      for (let j = 0; j < count; j++) {
-        result.push(c);
-        total++;
-      }
+      c[2] = count;
+      result.push(c);
+      total++;
     }
   });
-  postMessage({
-    action: 'add',
-    data: result,
-    meta: {count: total}
-  });
+
+  if (e.data.event === 'load') {
+    postMessage({
+      action: 'add',
+      data: result,
+      meta: {count: total, progress: 1}
+    });
+    postMessage({action: 'end'});
+  }
 };

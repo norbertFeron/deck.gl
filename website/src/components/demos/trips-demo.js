@@ -2,8 +2,9 @@ import React, {Component} from 'react';
 
 import {MAPBOX_STYLES, DATA_URI} from '../../constants/defaults';
 import {readableInteger} from '../../utils/format-utils';
-import ViewportAnimation from '../../utils/map-utils';
-import TripsOverlay from '../../../../examples/trips/deckgl-overlay';
+import {App, INITIAL_VIEW_STATE} from 'website-examples/trips/app';
+
+const EMPTY_ARRAY = [];
 
 export default class TripsDemo extends Component {
 
@@ -27,10 +28,11 @@ export default class TripsDemo extends Component {
   }
 
   static get viewport() {
-    return {
-      ...TripsOverlay.defaultViewport,
-      mapStyle: MAPBOX_STYLES.DARK
-    };
+    return INITIAL_VIEW_STATE;
+  }
+
+  static get mapStyle() {
+    return MAPBOX_STYLES.DARK;
   }
 
   static renderInfo(meta) {
@@ -63,41 +65,15 @@ export default class TripsDemo extends Component {
     );
   }
 
-  constructor(props) {
-    super(props);
-
-    this.state = {time: 0};
-
-    const thisDemo = this; // eslint-disable-line
-
-    this.tween = ViewportAnimation.ease({time: 0}, {time: 1800}, 60000)
-      .onUpdate(function tweenUpdate() {
-        thisDemo.setState(this); // eslint-disable-line
-      })
-      .repeat(Infinity);
-  }
-
-  componentDidMount() {
-    this.tween.start();
-  }
-
-  componentWillUnmount() {
-    this.tween.stop();
-  }
-
   render() {
-    const {viewport, data, params} = this.props;
-
-    if (!data) {
-      return null;
-    }
+    const {data, params, ...otherProps} = this.props;
 
     return (
-      <TripsOverlay viewport={viewport}
-        trips={data[0]}
-        buildings={data[1]}
-        trailLength={params.trail.value}
-        time={this.state.time} />
+      <App
+        {...otherProps}
+        trips={data && data[0] || EMPTY_ARRAY}
+        buildings={data && data[1] || EMPTY_ARRAY}
+        trailLength={params.trail.value} />
     );
   }
 }

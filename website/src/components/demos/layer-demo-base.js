@@ -7,7 +7,6 @@ import {MAPBOX_STYLES} from '../../constants/defaults';
 import {getLayerParams} from '../../utils/layer-params';
 
 const defaultViewport = {
-  mapStyle: MAPBOX_STYLES.LIGHT,
   longitude: -122.4,
   latitude: 37.74,
   zoom: 11,
@@ -43,6 +42,8 @@ export default function createLayerDemoClass(settings) {
     }
 
     static viewport = defaultViewport;
+
+    static mapStyle = MAPBOX_STYLES.LIGHT;
 
     static get parameters() {
       return getLayerParams(renderLayer([]));
@@ -87,7 +88,7 @@ export default function createLayerDemoClass(settings) {
     }
 
     render() {
-      const {viewport, params, data} = this.props;
+      const {viewState, params, data} = this.props;
       const layers = [
         renderLayer(data, params, {
           onHover: this._onHover
@@ -96,7 +97,7 @@ export default function createLayerDemoClass(settings) {
 
       return (
         <div>
-          <DeckGL {...viewport} layers={ layers } />
+          <DeckGL pickingRadius={5} viewState={viewState} layers={ layers } />
           { this._renderTooltip() }
         </div>
       );

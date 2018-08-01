@@ -1,20 +1,17 @@
-/* global window, document */
+/* global window */
 
 // deck.gl ES6 components
-import {COORDINATE_SYSTEM, WebMercatorViewport, experimental} from 'deck.gl';
-
-const {MapState, OrbitState, FirstPersonViewport, OrbitViewport, ReflectionEffect} = experimental;
+import {COORDINATE_SYSTEM, View, MapView, FirstPersonView, OrbitView, MapController} from 'deck.gl';
+import {_OrbitController as OrbitController} from '@deck.gl/core';
+import {_ReflectionEffect as ReflectionEffect} from '@deck.gl/core';
 
 // deck.gl react components
-import DeckGL from 'deck.gl';
-const {ViewportController} = experimental;
+import DeckGL from '@deck.gl/react';
 
 import React, {PureComponent} from 'react';
-import ReactDOM from 'react-dom';
 import autobind from 'react-autobind';
 
 import {StaticMap} from 'react-map-gl';
-import FPSStats from 'react-stats-zavatta';
 
 import {Matrix4} from 'math.gl';
 
@@ -23,7 +20,6 @@ import LayerSelector from './components/layer-selector';
 import LayerControls from './components/layer-controls';
 
 import LAYER_CATEGORIES from './examples';
-import {setImmutableDataSamples} from './immutable-data-samples';
 
 /* eslint-disable no-process-env */
 const MapboxAccessToken =
@@ -47,12 +43,12 @@ const ViewportLabel = props => (
 );
 
 // ---- View ---- //
-class App extends PureComponent {
+export default class App extends PureComponent {
   constructor(props) {
     super(props);
     autobind(this);
 
-    this.state = {
+    this.state = props.state || {
       mapViewState: {
         latitude: 37.751537058389985,
         longitude: -122.42694203247012,
@@ -74,8 +70,9 @@ class App extends PureComponent {
         ScatterplotLayer: true
       },
       settings: {
-        infovis: false,
+        orthographic: false,
         multiview: false,
+        infovis: false,
         useDevicePixels: true,
         pickingRadius: 0,
         drawPickingColors: false,
@@ -91,30 +88,33 @@ class App extends PureComponent {
       },
       hoveredItem: null,
       clickedItem: null,
-      queriedItems: null
+      queriedItems: null,
+
+      enableDepthPickOnClick: false
     };
 
     this._effects = [new ReflectionEffect()];
   }
 
-  componentWillMount() {
-    this._onResize();
-    window.addEventListener('resize', this._onResize);
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState !== this.state) {
+      this.props.onStateChange(this.state);
+    }
   }
 
   componentWillUnmount() {
     window.removeEventListener('resize', this._onResize);
   }
 
-  _onResize() {
-    this.setState({width: window.innerWidth, height: window.innerHeight});
+  _getSize() {
+    return {width: window.innerWidth, height: window.innerHeight};
   }
 
-  _onViewportChange(mapViewState) {
-    if (mapViewState.pitch > 60) {
-      mapViewState.pitch = 60;
+  _onViewStateChange({viewState}) {
+    if (viewState.pitch > 60) {
+      viewState.pitch = 60;
     }
-    this.setState({mapViewState});
+    this.setState({mapViewState: viewState});
   }
 
   _onToggleLayer(exampleName, example) {
@@ -134,7 +134,6 @@ class App extends PureComponent {
 
   _onUpdateContainerSettings(settings) {
     this.setState({settings});
-    setImmutableDataSamples(settings.immutable);
   }
 
   _onHover(info) {
@@ -142,12 +141,23 @@ class App extends PureComponent {
   }
 
   _onClick(info) {
-    this.setState({clickedItem: info});
+    if (this.state.enableDepthPickOnClick && info) {
+      this._multiDepthPick(info.x, info.y);
+    } else {
+      console.log('onClick', info); // eslint-disable-line
+      this.setState({clickedItem: info});
+    }
   }
 
   _onPickObjects() {
-    const {width, height} = this.state;
+    const {width, height} = this._getSize();
     const infos = this.refs.deckgl.pickObjects({x: 0, y: 0, width, height});
+    console.log(infos); // eslint-disable-line
+    this.setState({queriedItems: infos});
+  }
+
+  _multiDepthPick(x, y) {
+    const infos = this.refs.deckgl.pickMultipleObjects({x, y});
     console.log(infos); // eslint-disable-line
     this.setState({queriedItems: infos});
   }
@@ -168,6 +178,15 @@ class App extends PureComponent {
     return new Layer(layerProps);
   }
 
+  // Flatten layer props
+  _getLayerSettings(props) {
+    const settings = {};
+    for (const key in props) {
+      settings[key] = props[key];
+    }
+    return settings;
+  }
+
   /* eslint-disable max-depth */
   _renderExamples() {
     let index = 1;
@@ -183,7 +202,7 @@ class App extends PureComponent {
           const layer = this._renderExampleLayer(example, settings, index++);
 
           if (typeof settings !== 'object') {
-            activeExamples[exampleName] = layer.props;
+            activeExamples[exampleName] = this._getLayerSettings(layer.props);
           }
 
           layers.push(layer);
@@ -195,13 +214,17 @@ class App extends PureComponent {
   /* eslint-enable max-depth */
 
   _getModelMatrix(index, coordinateSystem) {
-    const {settings: {separation}} = this.state;
-    const modelMatrix = new Matrix4().translate([0, 0, 1000 * index * separation]);
+    const {
+      settings: {separation}
+    } = this.state;
+    const modelMatrix = new Matrix4().translate([0, 0, 5 * index * separation]);
 
     switch (coordinateSystem) {
       case COORDINATE_SYSTEM.METER_OFFSETS:
       case COORDINATE_SYSTEM.IDENTITY:
-        const {settings: {rotationZ, rotationX}} = this.state;
+        const {
+          settings: {rotationZ, rotationX}
+        } = this.state;
         modelMatrix.rotateZ(index * rotationZ * Math.PI);
         modelMatrix.rotateX(index * rotationX * Math.PI);
         break;
@@ -214,43 +237,31 @@ class App extends PureComponent {
     return modelMatrix;
   }
 
-  _getViewports() {
+  _getViews() {
     const {
-      width,
-      height,
-      mapViewState,
-      orbitViewState,
-      settings: {infovis, multiview}
+      settings: {infovis, multiview, orthographic}
     } = this.state;
 
     if (infovis) {
+      return new OrbitView({
+        id: 'infovis',
+        controller: OrbitController
+      });
+    }
+
+    if (multiview) {
       return [
-        new OrbitViewport({
-          id: 'infovis',
-          ...orbitViewState,
-          width,
-          height
+        new FirstPersonView({id: 'first-person', height: '50%'}),
+        new MapView({
+          id: 'basemap',
+          controller: MapController,
+          y: '50%',
+          height: '50%',
+          orthographic
         })
       ];
     }
-
-    return [
-      new WebMercatorViewport({
-        id: 'basemap',
-        ...mapViewState,
-        width,
-        height: multiview ? height / 2 : height,
-        y: multiview ? height / 2 : 0
-      }),
-      multiview &&
-        new FirstPersonViewport({
-          id: 'first-person',
-          ...mapViewState,
-          width,
-          height: height / 2,
-          position: [0, 0, 50]
-        })
-    ];
+    return new MapView({id: 'basemap', controller: MapController, orthographic});
   }
 
   // Only show infovis layers in infovis mode and vice versa
@@ -261,56 +272,46 @@ class App extends PureComponent {
   }
 
   _renderMap() {
-    const {width, height, orbitViewState, mapViewState, settings} = this.state;
+    const {orbitViewState, mapViewState, settings} = this.state;
     const {infovis, effects, pickingRadius, drawPickingColors, useDevicePixels} = settings;
 
-    const viewports = this._getViewports();
+    const views = this._getViews();
 
     return (
       <div style={{backgroundColor: '#eeeeee'}}>
-        <ViewportController
-          viewportState={infovis ? OrbitState : MapState}
-          {...(infovis ? orbitViewState : mapViewState)}
-          width={width}
-          height={height}
-          onViewportChange={this._onViewportChange}
+        <DeckGL
+          ref="deckgl"
+          id="default-deckgl-overlay"
+          layers={this._renderExamples()}
+          layerFilter={this._layerFilter}
+          views={views}
+          viewState={infovis ? orbitViewState : {...mapViewState, position: [0, 0, 50]}}
+          onViewStateChange={this._onViewStateChange}
+          effects={effects ? this._effects : []}
+          pickingRadius={pickingRadius}
+          onLayerHover={this._onHover}
+          onLayerClick={this._onClick}
+          useDevicePixels={useDevicePixels}
+          debug={false}
+          drawPickingColors={drawPickingColors}
         >
-          <DeckGL
-            ref="deckgl"
-            id="default-deckgl-overlay"
-            width={width}
-            height={height}
-            viewports={viewports}
-            layers={this._renderExamples()}
-            layerFilter={this._layerFilter}
-            effects={effects ? this._effects : []}
-            pickingRadius={pickingRadius}
-            onLayerHover={this._onHover}
-            onLayerClick={this._onClick}
-            useDevicePixels={useDevicePixels}
-            debug={false}
-            drawPickingColors={drawPickingColors}
-          >
-            <FPSStats isActive />
-
+          <View id="basemap">
             <StaticMap
-              viewportId="basemap"
-              {...mapViewState}
+              key="map"
+              mapStyle="mapbox://styles/uberdata/cive48w2e001a2imn5mcu2vrs"
               mapboxApiAccessToken={MapboxAccessToken || 'no_token'}
-              width={width}
-              height={height}
-              onViewportChange={this._onViewportChange}
             />
+            <ViewportLabel key="label">Map View</ViewportLabel>
+          </View>
 
-            <ViewportLabel viewportId="first-person">First Person View</ViewportLabel>
+          <View id="first-person">
+            <ViewportLabel>First Person View</ViewportLabel>
+          </View>
 
-            <ViewportLabel viewportId="basemap">Map View</ViewportLabel>
-
-            <ViewportLabel viewportId="infovis">
-              Orbit View (PlotLayer only, No Navigation)
-            </ViewportLabel>
-          </DeckGL>
-        </ViewportController>
+          <View id="infovis">
+            <ViewportLabel>Orbit View (PlotLayer only, No Navigation)</ViewportLabel>
+          </View>
+        </DeckGL>
       </div>
     );
   }
@@ -325,6 +326,13 @@ class App extends PureComponent {
           <div style={{textAlign: 'center', padding: '5px 0 5px'}}>
             <button onClick={this._onPickObjects}>
               <b>Pick Objects</b>
+            </button>
+            <button
+              onClick={() =>
+                this.setState({enableDepthPickOnClick: !this.state.enableDepthPickOnClick})
+              }
+            >
+              <b>Multi Depth Pick ({this.state.enableDepthPickOnClick ? 'ON' : 'OFF'})</b>
             </button>
           </div>
           <LayerControls
@@ -349,9 +357,3 @@ class App extends PureComponent {
     );
   }
 }
-
-// ---- Main ---- //
-
-const container = document.createElement('div');
-document.body.appendChild(container);
-ReactDOM.render(<App />, container);

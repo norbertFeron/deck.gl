@@ -16,7 +16,8 @@ export const normalizeParam = p => {
     return {...p, displayValue: JSON.stringify(p.value)};
   }
   if (p.type === 'color') {
-    return {...p, displayValue: colorToHex(p.value)};
+    const value = colorToRGBArray(p.value);
+    return {...p, value, displayValue: rgbToHex(value)};
   }
   return {...p, displayValue: String(p.value)};
 };
@@ -36,8 +37,8 @@ export const readableInteger = x => {
   return `${x.toFixed(1)}M`;
 };
 
-export function colorToHex(color) {
-  return colorToRGBArray(color).reduce(
+export function rgbToHex(rgb) {
+  return rgb.slice(0, 3).reduce(
     (acc, v) => `${acc}${v < 16 ? '0' : ''}${v.toString(16)}`,
     '#'
   );
@@ -45,8 +46,8 @@ export function colorToHex(color) {
 
 export function colorToRGBArray(color) {
   if (Array.isArray(color)) {
-    return color.slice(0, 3);
+    return color.slice(0, 4);
   }
   const c = rgb(color);
-  return [c.r, c.g, c.b];
+  return [c.r, c.g, c.b, 255];
 }

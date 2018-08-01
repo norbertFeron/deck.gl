@@ -12,13 +12,12 @@ import {
   HexagonLayer,
   GeoJsonLayer,
   PolygonLayer,
-  PathLayer
+  PathLayer,
+  TextLayer
 } from 'deck.gl';
 
 // Demonstrate immutable support
-import {experimental} from 'deck.gl';
-const {get} = experimental;
-import dataSamples from '../immutable-data-samples';
+import * as dataSamples from '../data-samples';
 import {parseColor, setOpacity} from '../utils/color';
 
 const LIGHT_SETTINGS = {
@@ -58,8 +57,8 @@ const IconLayerExample = {
     sizeScale: 24,
     getPosition: d => d.COORDINATES,
     getColor: d => [64, 64, 72],
-    getIcon: d => (get(d, 'PLACEMENT') === 'SW' ? 'marker' : 'marker-warning'),
-    getSize: d => (get(d, 'RACKS') > 2 ? 2 : 1),
+    getIcon: d => (d.PLACEMENT === 'SW' ? 'marker' : 'marker-warning'),
+    getSize: d => (d.RACKS > 2 ? 2 : 1),
     opacity: 0.8,
     pickable: true
   }
@@ -68,6 +67,16 @@ const IconLayerExample = {
 const GeoJsonLayerExample = {
   layer: GeoJsonLayer,
   getData: () => dataSamples.geojson,
+  propTypes: {
+    getLineDashArray: {type: 'compound', elements: ['lineDashSizeLine']},
+    lineDashSizeLine: {
+      type: 'number',
+      max: 20,
+      onUpdate: (newValue, newSettings, change) => {
+        change('getLineDashArray', [newValue, 20 - newValue]);
+      }
+    }
+  },
   props: {
     id: 'geojsonLayer',
     getRadius: f => MARKER_SIZE_MAP[f.properties['marker-size']],
@@ -81,6 +90,7 @@ const GeoJsonLayerExample = {
       const opacity = (f.properties['stroke-opacity'] || 1) * 255;
       return setOpacity(color, opacity);
     },
+    getLineDashArray: f => [20, 0],
     getLineWidth: f => f.properties['stroke-width'],
     getElevation: f => 500,
     lineWidthScale: 10,
@@ -96,8 +106,8 @@ const GeoJsonLayerExtrudedExample = {
   getData: () => dataSamples.choropleths,
   props: {
     id: 'geojsonLayer-extruded',
-    getElevation: f => ((get(f, 'properties.ZIP_CODE') * 10) % 127) * 10,
-    getFillColor: f => [0, 100, (get(f, 'properties.ZIP_CODE') * 55) % 255],
+    getElevation: f => ((f.properties.ZIP_CODE * 10) % 127) * 10,
+    getFillColor: f => [0, 100, (f.properties.ZIP_CODE * 55) % 255],
     getLineColor: f => [200, 0, 80],
     extruded: true,
     wireframe: true,
@@ -137,12 +147,23 @@ const PolygonLayerExample = {
 const PathLayerExample = {
   layer: PathLayer,
   getData: () => dataSamples.zigzag,
+  propTypes: {
+    getDashArray: {type: 'compound', elements: ['dashSizeLine']},
+    dashSizeLine: {
+      type: 'number',
+      max: 20,
+      onUpdate: (newValue, newSettings, change) => {
+        change('getDashArray', [newValue, 20 - newValue]);
+      }
+    }
+  },
   props: {
     id: 'pathLayer',
     opacity: 0.6,
-    getPath: f => get(f, 'path'),
+    getPath: f => f.path,
     getColor: f => [128, 0, 0],
     getWidth: f => 10,
+    getDashArray: f => [20, 0],
     widthMinPixels: 1,
     pickable: true
   }
@@ -153,7 +174,7 @@ const ScreenGridLayerExample = {
   getData: () => dataSamples.points,
   props: {
     id: 'screenGridLayer',
-    getPosition: d => get(d, 'COORDINATES'),
+    getPosition: d => d.COORDINATES,
     cellSizePixels: 40,
     minColor: [0, 0, 80, 0],
     maxColor: [100, 255, 0, 128],
@@ -166,10 +187,23 @@ const LineLayerExample = {
   getData: () => dataSamples.routes,
   props: {
     id: 'lineLayer',
-    getSourcePosition: d => get(d, 'START'),
-    getTargetPosition: d => get(d, 'END'),
-    getColor: d => (get(d, 'SERVICE') === 'WEEKDAY' ? [255, 64, 0] : [255, 200, 0]),
+    getSourcePosition: d => d.START,
+    getTargetPosition: d => d.END,
+    getColor: d => (d.SERVICE === 'WEEKDAY' ? [255, 64, 0] : [255, 200, 0]),
     pickable: true
+  }
+};
+
+const LineLayerExampleNewCoords = {
+  layer: LineLayer,
+  getData: () => dataSamples.routes,
+  props: {
+    id: 'lineLayer',
+    getSourcePosition: d => d.START,
+    getTargetPosition: d => d.END,
+    getColor: d => (d.SERVICE === 'WEEKDAY' ? [255, 64, 0] : [255, 200, 0]),
+    pickable: true,
+    coordinateSystem: COORDINATE_SYSTEM.LNGLAT_EXPERIMENTAL
   }
 };
 
@@ -178,9 +212,9 @@ const ScatterplotLayerExample = {
   getData: () => dataSamples.points,
   props: {
     id: 'scatterplotLayer',
-    getPosition: d => get(d, 'COORDINATES'),
+    getPosition: d => d.COORDINATES,
     getColor: d => [255, 128, 0],
-    getRadius: d => get(d, 'SPACES'),
+    getRadius: d => d.SPACES,
     opacity: 1,
     pickable: true,
     radiusScale: 30,
@@ -198,8 +232,8 @@ const GridCellLayerExample = {
     extruded: true,
     pickable: true,
     opacity: 1,
-    getColor: g => [245, 166, get(g, 'value') * 255, 255],
-    getElevation: h => get(h, 'value') * 5000,
+    getColor: d => [245, 166, d.value * 255, 255],
+    getElevation: d => d.value * 5000,
     lightSettings: LIGHT_SETTINGS
   }
 };
@@ -241,7 +275,7 @@ const GridLayerExample = {
     opacity: 1,
     extruded: true,
     pickable: true,
-    getPosition: d => get(d, 'COORDINATES'),
+    getPosition: d => d.COORDINATES,
     getColorValue,
     getElevationValue,
     lightSettings: LIGHT_SETTINGS
@@ -258,8 +292,8 @@ const HexagonCellLayerExample = {
     extruded: true,
     pickable: true,
     opacity: 1,
-    getColor: h => [48, 128, get(h, 'value') * 255, 255],
-    getElevation: h => get(h, 'value') * 5000,
+    getColor: d => [48, 128, d.value * 255, 255],
+    getElevation: d => d.value * 5000,
     lightSettings: LIGHT_SETTINGS
   }
 };
@@ -276,10 +310,46 @@ const HexagonLayerExample = {
     elevationScale: 1,
     elevationRange: [0, 3000],
     coverage: 1,
-    getPosition: d => get(d, 'COORDINATES'),
+    getPosition: d => d.COORDINATES,
     getColorValue,
     getElevationValue,
     lightSettings: LIGHT_SETTINGS
+  }
+};
+
+const TextLayerExample = {
+  layer: TextLayer,
+  getData: () => dataSamples.texts,
+  propTypes: {
+    fontFamily: {
+      name: 'fontFamily',
+      type: 'category',
+      value: ['Monaco', 'Helvetica', 'Garamond', 'Palatino', 'Courier', 'Courier New']
+    }
+  },
+  props: {
+    id: 'text-layer',
+    sizeScale: 1,
+    fontFamily: 'Monaco',
+    getText: x => x.LOCATION_NAME,
+    getPosition: x => x.COORDINATES,
+    getColor: x => [153, 0, 0],
+    getAngle: x => 30,
+    getTextAnchor: x => 'start',
+    getAlignmentBaseline: x => 'center',
+    getPixelOffset: x => [10, 0]
+  }
+};
+
+const TextLayer100KExample = {
+  layer: TextLayer,
+  getData: dataSamples.getPoints100K,
+  props: {
+    id: 'text-layer-100k',
+    getText: x => 'X',
+    getPosition: x => x,
+    getColor: x => [0, 0, 200],
+    sizeScale: 1
   }
 };
 
@@ -310,7 +380,7 @@ const PointCloudLayerExample2 = {
     coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS,
     coordinateOrigin: dataSamples.positionOrigin,
     getPosition: d => [d.position[0] * 1e-5, d.position[1] * 1e-5, d.position[2]],
-    getNormal: d => d.normal,
+    getNormal: d => [d.normal[0] * 1e-5, d.normal[1] * 1e-5, d.normal[2]],
     getColor: d => d.color,
     opacity: 1,
     radiusPixels: 4,
@@ -416,6 +486,30 @@ const ScatterplotLayer64PerfExample = (id, getData) => ({
   }
 });
 
+function GeoJsonLayerPerfExample(id, getData) {
+  return {
+    layer: GeoJsonLayer,
+    getData,
+    props: {
+      id: `geojsonlayerperf-${id}`,
+      pointRadiusMinPixels: 4
+    }
+  };
+}
+
+const ScreenGridLayerPerfExample = (id, getData) => ({
+  layer: ScreenGridLayer,
+  getData,
+  props: {
+    id: `screenGridLayerPerf-${id}`,
+    getPosition: d => d,
+    cellSizePixels: 40,
+    minColor: [0, 0, 80, 0],
+    maxColor: [100, 255, 0, 128],
+    pickable: false
+  }
+});
+
 /* eslint-disable quote-props */
 export default {
   'Core Layers - LngLat': {
@@ -426,12 +520,15 @@ export default {
     ScatterplotLayer: ScatterplotLayerExample,
     ArcLayer: ArcLayerExample,
     LineLayer: LineLayerExample,
+    LineLayerNewCoords: LineLayerExampleNewCoords,
     IconLayer: IconLayerExample,
     GridCellLayer: GridCellLayerExample,
     GridLayer: GridLayerExample,
     ScreenGridLayer: ScreenGridLayerExample,
     HexagonCellLayer: HexagonCellLayerExample,
-    HexagonLayer: HexagonLayerExample
+    HexagonLayer: HexagonLayerExample,
+    TextLayer: TextLayerExample,
+    'TextLayer (100K)': TextLayer100KExample
   },
 
   'Core Layers - Meter Offsets': {
@@ -448,6 +545,17 @@ export default {
     'ScatterplotLayer 10M': ScatterplotLayerPerfExample('10M', dataSamples.getPoints10M),
     'ScatterplotLayer64 100K': ScatterplotLayer64PerfExample('100K', dataSamples.getPoints100K),
     'ScatterplotLayer64 1M': ScatterplotLayer64PerfExample('1M', dataSamples.getPoints1M),
-    'ScatterplotLayer64 10M': ScatterplotLayer64PerfExample('10M', dataSamples.getPoints10M)
+    'ScatterplotLayer64 10M': ScatterplotLayer64PerfExample('10M', dataSamples.getPoints10M),
+    'GeoJsonLayer (1M Point features)': GeoJsonLayerPerfExample(
+      '1M-point',
+      dataSamples.getPointFeatures1M
+    ),
+    'GeoJsonLayer (100K MultiPoint features, 10 points per feature)': GeoJsonLayerPerfExample(
+      '100K-multipoint',
+      dataSamples.getMultiPointFeatures100K
+    ),
+    'ScreenGridLayer (1M)': ScreenGridLayerPerfExample('1M', dataSamples.getPoints1M),
+    'ScreenGridLayer (5M)': ScreenGridLayerPerfExample('5M', dataSamples.getPoints5M),
+    'ScreenGridLayer (10M)': ScreenGridLayerPerfExample('10M', dataSamples.getPoints10M)
   }
 };

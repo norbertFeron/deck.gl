@@ -1,73 +1,117 @@
 # RFC Directory (deck.gl)
 
-Implementation of non-trivial new deck.gl features should typically be started off with the creation of an RFC (Request for Comments) to make sure we have a complete story. It also allow the bigger team (as well as the community) to comment and contribute insights.
 
-| RFC Status       | Description |
-| ---              | --- |
-| **Proposed**     | Call for an RFC to be written |
-| **Draft**        | Work-in-progress, not ready for formal review |
-| **Pre-Approved** | No major initial objections, draft pre-approved for prototyping |
-| **Review**       | Ready for formal review |
-| **Approved**     | Approved, ready for implementation |
-| **Experimental** | Approved, implemented as experimental API |
-| **Implemented**  | Approved and implemented (as officially supported API) |
-| **Deferred**     | Review uncovered reasons not to proceed at this time |
-| **Rejected**     | Review uncovered reasons not to proceed |
+## Guidelines
 
-## Reviews
+The core developers will review RFCs (and of course, comments from the community are always welcome). Recommended review criteria are being documented in [RFC Review Guidelines](../common/RFC-GUIDELINES.md).
 
-The core developers will review RFCs (and of course, comments from the community are always welcome). Recommended review criteria are being documented in [RFC Review Guidelines](../common/RFC-REVIEW-GUIDELINES.md).
+
+## Roadmaps
+
+Documents indicating intent and direction for bigger areas of functionality. Roadmap documents are intended to provide higher level descriptions than the more detailed, topic-focused RFCs.
+
+| Roadmap                                                            | Status       | Description |
+| ---                                                                | ---          | ---         |
+| [**Infovis Roadmap**](../roadmaps/gpgpu-roadmap.md)                | Just started | infovis (non-geospatial) features roadmap |
+| [**New Layers Roadmap**](../roadmaps/layers-roadmap.md)            | Draft        | Ideas for new layers |
+| [**Pure JS and Scripting Roadmap**](../roadmaps/purejs-roadmap.md) | Implemented  | Support for Scripting and Pure-JS APIs |
+| [**Reduce Distribution Size**](../roadmaps/dist-size-roadmap.md)   | Ongoing      | Reduce size of distribution and the bundle size of applications using deck.gl |
+
 
 ## Longer-Terms RFCs
 
-These are early ideas not yet associated with any release
+These RFCs are not yet associated with any specific release.
 
 | RFC | Author | Status | Description |
 | --- | --- | --- | --- |
-| **Reviewed/Deferred** | | | |
-| [**Partial Updates**](v6.0/partial-updates-rfc.md) | @ibgreen | **Deferred** | Allow partial updates of vertex attributes to support high-performance editing. Deferred due to performance of complete updates being so good this was not needed. |
-| [**Off-thread attribute generation**](v6.0/off-thread-attribute-generation.md) | @pessimistress | **Deferred** | Generate attributes off-thread (to avoid locking the main thread). Deferred due to issues with supporting the more general use cases. **dataUrl RFC** has been broken out. |
+| **Ongoing Efforts** | | | |
+| [**Reduce Repository Size**](vNext/reduce-repo-size-rfc.md) | @ibgreen | **Draft** | Reduce size of deck.gl github repository |
 | | | | |
 | **WIP/Draft** | | | |
 | [**Projection Mode Improvements**](vNext/projection-mode-improvements-rfc.md) | @ibgreen @pessimistress | **Draft** | Improvements to projection system |
 | [**Composite Layer Customization**](vNext/composite-layer-customization-rfc.md) | @ibgreen | **Draft** | Improvements to customizing composite layers |
-| [**Shader Module Injection**](vNext/shader-module-injection-rfc.md) | @ibgreen | **Draft** | |
+| **[Render Layer to Texture](vNext/render-layer-to-texture-rfc.md)** | TBD | Proposed | Allow layers to render to texture and then use texture in subsequent layers.  |
 | | | | |
-| **Effects** | | | |
-| **[Effects Manager](v6.0/effects-manager-rfc.md)** | @1chandu @ibgreen | Draft | Official support for effects (shadows, reflections, better lighting, postprocessing, framebuffer composition etc).  |
-| **[Render Layer to Texture](v6.0/render-layer-to-texture-rfc.md)** | TBD | Proposed | Allow layers to render to texture and then use texture in subsequent layers.  |
+| **Reviewed/Deferred** | | | |
+| [**Off-thread attribute generation**](vNext/off-thread-attribute-generation.md) | @pessimistress | **Deferred** | Generate attributes off-thread (to avoid locking the main thread). Deferred due to issues with supporting the more general use cases. **dataUrl RFC** has been broken out. |
+| [**Expose Layer AttributeManager**](vNext/expose-attribute-manager.md) | @ibgreen | **Deferred** | simplifies pregenerating attributes in apps for fast animation. |
+| [**Unified ViewState**](vNext/view-state-rfc.md) | @ibgreen | **Deferred** | Controversial proposal for an even more Unified View/Controller Architecture. Review again after all Controller/Multiview RFCs have been approved/implemented |
+| [**New Layers**](vNext/new-layers-rfc.md) | @shaojingli | **Deferred** | Ideas for new layers |
+
+
+## v6.x RFCs
+
+RFCs loosely targeted for 6.X releases. Also see [luma.gl RFCs](https://github.com/uber/luma.gl/tree/master/dev-docs/RFCs#v6x-rfcs)
+
+
+| RFC | Author | Status | Description |
+| --- | ---    | ---    | ---         |
+| [**PropTypes**](v6.x/prop-types-rfc.md) | @ibgreen | **Review** | Validate e.g ranges for numeric attributes, support animation/auto-interpolation. |
+| **[Effects Manager](v6.x/effects-manager-rfc.md)** | @1chandu @ibgreen | Draft | Official support for effects (shadows, reflections, better lighting, postprocessing, framebuffer composition etc).  |
+
+Possible other animation related RFCs:
+- integration with event handling (enter leave triggers for animations)
+
+
+
+## v6.1 RFCs
+
+These RFCS are currently targeted for v6.1 Also see [luma.gl RFCs](https://github.com/uber/luma.gl/tree/master/dev-docs/RFCs#v61-rfcs)
+
+
+| RFC | Author | Status | Description |
+| --- | ---    | ---    | ---         |
+| [**Improved 32 bit Projection Mode**](v6.1/improved-lnglat-projection-rfc.md.md) | @ibgreen @georgios-uber | **Draft** | New projection mode for mixed 32/64 bit precision. |
+| [**Partial Updates**](v6.1/partial-updates-rfc.md) | @ibgreen @georgios-uber | **draft** | Allow partial updates of vertex attributes to support high-performance editing. |
+| [**Property Animation**](v6.0/property-animation-rfc.md) | @ibgreen | Draft | Allow Layer props and GL parameters to accept functions in addition to values and call these on every render to update values |
+| [**JSON Layers**](v6.1/json-layers-rfc.md) | @ibgreen| **draft** | Allow partial updates of vertex attributes to support high-performance editing. |
 
 
 ## v6.0 RFCs
 
-Current direction for [deck.gl v6.0](https://github.com/uber/deck.gl/projects/3) is to focus on **animation** and TBA...
+These RFCS were implemented in v6.0. Also see [luma.gl RFCs](https://github.com/uber/luma.gl/tree/master/dev-docs/RFCs#v60-rfcs)
 
-So we want to prioritize related RFCs. In particular, the topic of animation is big, and it has been broken down into a number of separete RFCs that should all move us in the right direction.
+| RFC | Author | Status | Description |
+| --- | ---    | ---    | ---         |
+| [**Per-View Controllers**](v6.0/per-view-controllers-rfc.md) | @ibgreen | **Draft** | Support one controller per view in multi-view apps |
+| **[GPU Aggregations](v6.0/gpu-screengrid-aggregation-rfc.md)** | @1chandu | Draft | Official support for effects (shadows, reflections, better lighting, postprocessing, framebuffer composition etc).  |
+| **[Data Filter](v6.0/data-filter-rfc.md)** | @pessimistress | Draft | Add generic support to filter data objects on the GPU.  |
+| **[React API](v6.0/react-api.md)** | @pessimistress | Draft | React API refresh.  |
 
-Also see luma.gl RFCs
+
+## v5.3 RFCs
+
+These RFCs were implemented in v5.3.
+
+| RFC | Author | Status | Description |
+| --- | --- | --- | --- |
+| [**Auto Controls**](v5.3/auto-controls-rfc.md) | @ibgreen | **Review** | Allow deck.gl to be used without an `onViewStateChange` callback. |
+| [**Async Layer Props**](v5.3/async-props-rfc.md) | @pessimistress & @ibgreen | **Review** | `Layer.data` can be a URL string, and layer asynchronously downloads and displays the data. |
+| [**Picking Occluded Ojects**](v5.3/picking-overlapping-objects-rfc.md) | @ibgreen @georgios-uber | **draft** | Allow partial updates of vertex attributes to support high-performance editing. |
+| [**Constant Accessor**](v5.3/constant-accessor-rfc.md) | @pessimistress | **draft** | Allow users to supply constant attributes directly instead of using an accessor. |
+| [**Attribute Buffer**](v5.3/attribute-buffer-rfc.md) | @pessimistress | **draft** | Move buffer management from Model class to AttributeManager. |
+
+
+
+## v5.2 RFCs
+
+These RFCs were implemented in v5.2.
+
+| RFC | Author | Status | Description |
+| --- | --- | --- | --- |
+| [**New View Classes**](v5.2/view-class-rfc.md) | @ibgreen @pessimistress | **Implemented** | Official API for multi-view support, replacing the v5.0 experimental API |
+| [**Unified 32/64-bit Projection**](v5.2/unified-32-and-64-bit-project-api-rfc.md) | @ibgreen | **Implemented** | |
+
+
+## v5.1 RFCs
+
+These RFCs were implemented in v5.1.
 
 | RFC | Author | Status | Description |
 | --- | --- | --- | --- |
 | **Animation** | | | |
-| [**PropTypes**](v6.0/prop-types-rfc.md) | ? | Draft | Validate e.g ranges for numeric attributes, support animation/auto-interpolation. |
-| [**Property Animation**](v6.0/property-animation-rfc.md) | @ibgreen | Draft | Allow Layer props and GL parameters to accept functions in addition to values and call these on every render to update values |
-| [**Attribute Animation**](v6.0/attribute-animation-rfc.md) | @pessimistress | Proposed | Automatically interpolate between two copies of a vertex attributes |
-| [**Expose Layer AttributeManager**](v6.0/expose-attribute-manager.md) | @ibgreen | **Review** | simplifies pregenerating attributes in apps for fast animation. |
-| | | | |
-| **Ease-of-Use** | | | |
-| [**dataUrl**](v6.0/data-url-rfc.md) | @pessimistress & @ibgreen | Draft | **Ease-of-Use** Allow deck.gl layers to specify a URL and asynchronously download the resulting data |
-| | | | |
-| **Finalize Multi-Viewport API** | | | |
-| [**New View Class**](v6.0/view-class-rfc.md) | @ibgreen | **Draft** | Proposed Official API for multi-view(port) support, replacing the v5.0 experimental API |
-| [**Per-View Controllers**](v6.0/per-view-controllers-rfc.md) | @ibgreen | **Draft** | Support one controller per view in multi-view apps |
-| [**Unified ViewState**](v6.0/view-state-rfc.md) | @ibgreen | **Draft** | Highly controversial proposal for an even more Unified View/Controller Architecture. Will likely be deferred. Review again after other related RFCs have been approved/implemented |
-| | | | |
-| **Internals** | | | |
-| [**Reduce Distribution Size**](v6.0/reduce-distribution-size-rfc.md) | @ibgreen | **Review** | **Hygiene** Reduce size of distribution and the bundle size of apps consuming deck.gl |
-| [**Reduce Repository Size**](v6.0/reduce-repo-size-rfc.md) | @ibgreen | **Draft** | **Hygiene** Reduce size of deck.gl github repository |
-
-Possible other animation related RFCs:
-- integration with event handling (enter leave triggers for animations)
+| [**Attribute Transitions**](v5.1/attribute-transition-rfc.md) | @pessimistress | **Implemented** | Automatically interpolate between two copies of a vertex attributes |
+| **[TransitionInterpolator](v5.1/transition-interpolator-class-rfc.md)** | @pessimistress | **Implemented** | New class to make it easier to customize interpolation |
 
 
 ## v5.0 RFCs
@@ -78,16 +122,14 @@ These RFCs were implemented in v5.0. Also see luma.gl RFCs.
 | --- | --- | --- | --- |
 | **Animation** | | | |
 | [**Auto Highlighting**](v5.0/auto-highlighting-rfc.md) | @ibgreen @1chandu | **Implemented** | Auto highlight hovered object via `picking` module |
-| [**Viewport Transitions**](v5.0/viewport-animation-rfc.md) | @1chandu | **Experimental** | Animate Viewport changes ("fly to" effect) through interpolation of Viewport props. (Also used in react-map-gl v3.2). |
 | | | | |
 | **Viewports and Controllers** | | | |
-| [**First Person Geospatial Viewport**](v5.0/first-person-mercator-viewport-rfc.md) | @ibgreen | **Experimental** | Geospatially enable all viewports, add FirstPersonViewport for hybrid apps. |
+| [**First Person Geospatial Viewport**](v5.0/first-person-geospatial-viewport-rfc.md) | @ibgreen | **Experimental** | Geospatially enable all viewports, add FirstPersonViewport for hybrid apps. |
 | [**Multiple Viewports**](v5.0/multi-viewport-rfc.md) | @ibgreen | **Experimental** | Support for multiple viewports |
-| | | | |
-| **General** | | | |
+| [**Viewport Transitions**](v5.0/viewport-transitions-rfc.md) | @1chandu | **Experimental** | Animate Viewport changes ("fly to" effect) through interpolation of Viewport props. (Also used in react-map-gl v3.2). |
 | [**Break out EventManager**](v5.0/break-out-event-manager-rfc.md) | @ibgreen | **Implemented** | Break out event manager module (mjolnir.js) |
 | | | | |
-| **luma.gl RFCs** | | | |
+| **[luma.gl RFCs](https://github.com/uber/luma.gl/tree/master/dev-docs/RFCs)** | | | |
 | **Break out Math Module** | @ibgreen | **Implemented** | Break out luma.gl math module (math.gl) |
 
 

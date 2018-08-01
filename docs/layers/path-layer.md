@@ -18,7 +18,7 @@ const App = ({data, viewport}) => {
    * [
    *   {
    *     path: [[-122.4, 37.7], [-122.5, 37.8], [-122.6, 37.85]],
-   *     width: 1,
+   *     name: 'Richmond - Millbrae',
    *     color: [255, 0, 0]
    *   },
    *   ...
@@ -27,8 +27,13 @@ const App = ({data, viewport}) => {
   const layer = new PathLayer({
     id: 'path-layer',
     data,
-    rounded: true,
-    widthScale: 100
+    pickable: true,
+    widthScale: 20,
+    widthMinPixels: 2,
+    getPath: d => d.path,
+    getColor: d => colorToRGBArray(d.color),
+    getWidth: d => 5,
+    onHover: ({object}) => setTooltip(object.name)
   });
 
   return (<DeckGL {...viewport} layers={[layer]} />);
@@ -43,84 +48,85 @@ Inherits from all [Base Layer](/docs/api-reference/layer.md) properties.
 
 ##### `widthScale` (Number, optional)
 
-- Default: `1`
+* Default: `1`
 
 The path width multiplier that multiplied to all paths.
 
 ##### `widthMinPixels` (Number, optional)
 
-- Default: `0`
+* Default: `0`
 
 The minimum path width in pixels.
 
 ##### `widthMaxPixels` (Number, optional)
 
-- Default: Number.MAX_SAFE_INTEGER
+* Default: Number.MAX_SAFE_INTEGER
 
 The maximum path width in pixels.
 
 ##### `rounded` (Boolean, optional)
 
-- Default: `false`
+* Default: `false`
 
 Type of joint. If `true`, draw round joints. Otherwise draw miter joints.
 
 ##### `miterLimit` (Number, optional)
 
-- Default: `4`
+* Default: `4`
 
 The maximum extent of a joint in ratio to the stroke width.
 Only works if `rounded` is `false`.
 
 ##### `fp64` (Boolean, optional)
 
-- Default: `false`
+* Default: `false`
 
 Whether the layer should be rendered in high-precision 64-bit mode
 
 ##### `dashJustified` (Boolean, optional)
 
-- Default: `false`
+* Default: `false`
 
 Only effective if `getDashArray` is specified. If `true`, adjust gaps for the dashes to align at both ends.
 
 ### Data Accessors
 
-##### `getPath` (Function, optional)
+##### `getPath` (Function, optional) ![transition-enabled](https://img.shields.io/badge/transition-enabled-green.svg?style=flat-square")
 
-- Default: `(object, index) => object.paths`
+* Default: `object => object.paths`
 
 Returns the specified path for the object.
 
 A path is an array of coordinates.
 
-##### `getColor` (Function, optional)
+##### `getColor` (Function|Array, optional) ![transition-enabled](https://img.shields.io/badge/transition-enabled-green.svg?style=flat-square")
 
-Returns an array of color
+* Default `[0, 0, 0, 255]`
 
-- Default `(object, index) => object.color || [0, 0, 0, 255]`
+The rgba color of each object, in `r, g, b, [a]`. Each component is in the 0-255 range.
 
-Method called to determine the rgba color of the source.
+* If an array is provided, it is used as the color for all objects.
+* If a function is provided, it is called on each object to retrieve its color.
 
-If the color alpha (the fourth component) is not provided,
-`alpha` will be set to `255`.
+##### `getWidth` (Function|Number, optional) ![transition-enabled](https://img.shields.io/badge/transition-enabled-green.svg?style=flat-square")
 
-##### `getWidth` (Function, optional)
+* Default: `1`
 
-- Default: `(object, index) => object.width || 1`
+The width of each path, in meters.
 
-Method called to determine the width to draw each path with.
-Unit is meters.
+* If a number is provided, it is used as the width for all paths.
+* If a function is provided, it is called on each path to retrieve its width.
 
-##### `getDashArray` (Function, optional)
+##### `getDashArray` (Function|Array, optional)
 
-- Default: `null`
+* Default: `null`
 
-Method called to get the dash array to draw each path with.
-Returns an array of two numbers: `[dashSize, gapSize]` relative to the width of the path. Returns `[0, 0]` to draw the path in solid line.
+The dash array to draw each path with: `[dashSize, gapSize]` relative to the width of the path.
 
-If this accessor is not specified, all paths are drawn as solid lines.
+* If an array is provided, it is used as the dash array for all paths.
+* If a function is provided, it is called on each path to retrieve its dash array. Return `[0, 0]` to draw the path in solid line.
+* If this accessor is not specified, all paths are drawn as solid lines.
 
 ## Source
 
-[src/core-layers/path-layer](https://github.com/uber/deck.gl/tree/5.1-release/src/core-layers/path-layer)
+[modules/core/src/core-layers/path-layer](https://github.com/uber/deck.gl/tree/master/modules/layers/src/path-layer)

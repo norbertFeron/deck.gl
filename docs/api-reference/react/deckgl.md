@@ -1,256 +1,198 @@
 # DeckGL (React Component)
 
-`DeckGL` is a React component that takes deck.gl layer instances and viewport parameters, and renders those layers as a transparent overlay.
+`DeckGL` is the main interface to deck.gl for React applications. `DeckGL` is a React component that takes a list of deck.gl layer instances and a view state, and renders those layers on a transparent canvas that can be used as an overlay over other components like maps.
 
 Make sure to read the [Using deck.gl with React](/docs/get-started/using-with-react.md) article.
+
+The `DeckGL` class is a React wrapper of the `Deck` JavaScript class which exposes essentially the same props. The `Deck` class should not be used directly in React applications.
 
 
 ## Usage
 
-// Basic standalone use
 ```js
+// Basic usage
 import DeckGL, {ScatterplotLayer} from 'deck.gl';
 
-const App = (viewport, data) => (
+const App = (data) => (
   <DeckGL
-    {...viewport}
+    longitude={-122.45}
+    latitude={37.78}
+    zoom={12}
     layers={[new ScatterplotLayer({data})]} />
 );
 ```
 
-## Experimental Usage
+Like any React component, `DeckGL` can accept child components. Child components are often maps (e.g. the `StaticMap` component from react-map-gl), but can be any React components.
 
-`DeckGL` can accept child components. Child components can be automatically positioned underneath the deck.gl `viewports`. Such child components are often maps (e.g. represented by instances of the `StaticMap` component from [react-map-gl]()), but can be any React components.
-
-// Multiple viewports and a base map
 ```js
-  const viewports = [
-    new FirstPersonViewport({...}),
-    new WebMercatorViewport({id: 'basemap', ...})
-  ];
+import DeckGL from 'deck.gl';
+import {StaticMap} from 'react-map-gl';
 
-  render() {
-    return (
-      <DeckGL
-        width={viewportProps.width}
-        height={viewportProps.height}
-        layers={this._renderLayers()}
-        viewports={viewports} />
+const App = (data) => (
+  <DeckGL
+    initialViewState={{longitude: -122.45, latitude: 37.78, zoom: 12}}
+    controller={true}
+    layers={[new ScatterplotLayer({data})]}
+  >
+    <StaticMap
+      mapStyle="mapbox://styles/mapbox/dark-v9"
+      mapboxApiAccessToken={MAPBOX_ACCESS_TOKEN} />
+  </DeckGL>
+);
 
-        <StaticMap
-          viewportId='basemap'
-          {...viewportProps}/>
-
-      </DeckGL>
-    );
-  }
 ```
 
+## Properties
 
-### Properties
-
-##### `width` (Number, required)
-
-Width of the canvas.
-
-##### `height` (Number, required)
-
-Height of the canvas.
-
-##### `layers` (Array, required)
-
-The array of deck.gl layers to be rendered. This array is expected to be an array of newly allocated instances of your deck.gl layers, created with updated properties derived from the current application state.
-
-##### `layerFilter`
-
-Optionally takes a function `({layer, viewport, isPicking}) => Boolean` that is called before a layer is rendered. Gives the application an opportunity to filter out layers from the layer list during either rendering or picking. Filtering can be done per viewport or per layer or both. This enables techniques like adding helper layers that work as masks during picking but do not show up during rendering. All the lifecycle methods are still triggered even a if a layer is filtered out using this prop.
+`DeckGL` accepts all [Deck](/docs/api-reference/deck.md#properties) properties, with these additional semantics:
 
 
-#### View State Properties
+### View State Properties
 
-If you do not supply any `viewports` deck.gl will attempt to autocreate one from the following props.
+For backwards compatibility, the `DeckGL` component can be used without the `viewState` prop. If a `viewState` prop is not supplied, `DeckGL` will attempt to autocreate a geospatial view state from the following props.
 
 ##### `latitude` (Number, optional)
 
-Current latitude - used to define a mercator projection if `viewport` is not supplied.
+Current latitude - used to define a mercator projection if `viewState` is not supplied.
 
 ##### `longitude` (Number, optional)
 
-Current longitude - used to define a mercator projection if `viewport` is not supplied.
+Current longitude - used to define a mercator projection if `viewState` is not supplied.
 
 ##### `zoom` (Number, optional)
 
-Current zoom - used to define a mercator projection if `viewport` is not supplied.
+Current zoom - used to define a mercator projection if `viewState` is not supplied.
 
 ##### `bearing` (Number, optional)
 
-Current bearing - used to define a mercator projection if `viewport` is not supplied.
+Current bearing - used to define a mercator projection if `viewState` is not supplied.
 
 ##### `pitch` (Number, optional)
 
-Current pitch - used to define a mercator projection if `viewport` is not supplied.
+Current pitch - used to define a mercator projection if `viewState` is not supplied.
+
+##### `controller` (Function | Boolean | Object, optional)
+
+Options for viewport interactivity.
+
+* `null` or `false`: this view is not interactive.
+* `true`: initiates the default controller with default options.
+* `Controller` class: initiates the provided controller with default options.
+* `Object`: controller options. This will be merged with the default controller options. 
+  - `controller.type`: the controller class
+  - For other options, consult the documentation of each Controller class.
 
 
-#### Configuration Properties
-
-##### `id` (String, optional)
-
-Canvas ID to allow style customization in CSS.
-
-##### `style` (Object, optional)
-
-Css styles for the deckgl-canvas.
-
-##### `pickingRadius` (Number, optional)
-
-Extra pixels around the pointer to include while picking. This is helpful when rendered objects are difficult to target, for example irregularly shaped icons, small moving circles or interaction by touch. Default `0`.
-
-##### `useDevicePixels` (Boolean, optional)
-
-When true, device's full resolution will be used for rendering, this value can change per frame, like when moving windows between screens or when changing zoom level of the browser.
-
-Default value is `true`.
-
-Note: Consider setting to `false` unless you require high resolution, as it affects rendering performance.
-
-##### `gl` (Object, optional)
-
-gl context, will be autocreated if not supplied.
-
-##### `debug` (Boolean, optional)
-
-Flag to enable debug mode.
-
-Default value is `false`.
-
-Note: debug mode is somewhat slower as it will use synchronous operations to keep track of GPU state.
-
-##### `onWebGLInitialized` (Function, optional)
-
-Callback, called once the WebGL context has been initiated
-
-Callback arguments:
-- `gl` - the WebGL context.
-
-##### `onLayerHover` (Function, optional)
-
-Callback - called when the object under the pointer changes.
-
-Callback Arguments:
-- `info` - the [`info`](/docs/get-started/interactivity.md#the-picking-info-object)
-object for the topmost picked layer at the coordinate, null when no object is picked.
-- `pickedInfos` - an array of info objects for all pickable layers that
-are affected.
-- `event` - the original [MouseEvent](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent) object
-
-##### `onLayerClick` (Function, optional)
-
-Callback - called when clicking on the layer.
-
-Callback Arguments:
-- `info` - the [`info`](/docs/get-started/interactivity.md#the-picking-info-object)
-object for the topmost picked layer at the coordinate, null when no object is picked.
-- `pickedInfos` - an array of info objects for all pickable layers that are affected.
-- `event` - the original [MouseEvent](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent) object
-
-
-### Methods
-
-The picking methods are supplied to enable applications to use their own event handling.
-
-##### pickObject
-
-Get the closest pickable and visible object at screen coordinate.
-
-`deck.pickObject({x, y, radius, layerIds})`
-
-Parameters:
-- `options` (Object)
-  + `x` (Number) - x position in pixels
-  + `y` (Number) - y position in pixels
-  + `radius` (Number, optional) - radius of tolerance in pixels. Default `0`.
-  + `layerIds` (Array, optional) - a list of layer ids to query from.
-    If not specified, then all pickable and visible layers are queried.
-
-Returns: a single [`info`](/docs/get-started/interactivity.md#the-picking-info-object) object, or `null` if nothing is found.
-
-NOTE: replaces deprecated method `queryObject`.
-
-##### pickObjects
-
-Get all pickable and visible objects within a bounding box.
-
-`deck.pickObjects({x, y, width, height, layerIds})`
-
-Parameters:
-- `options` (Object)
-  + `x` (Number) - left of the bounding box in pixels
-  + `y` (Number) - top of the bouding box in pixels
-  + `width` (Number, optional) - width of the bouding box in pixels. Default `1`.
-  + `height` (Number, optional) - height of the bouding box in pixels. Default `1`.
-  + `layerIds` (Array, optional) - a list of layer ids to query from.
-    If not specified, then all pickable and visible layers are queried.
-
-Returns: an array of unique [`info`](/docs/get-started/interactivity.md#the-picking-info-object) objects
-
-Remarks:
-- This query methods are designed to quickly find objects by utilizing the picking buffer. They offer more flexibility for developers to handle events in addition to the built-in hover and click callbacks.
-- Note there is a limitation in the query methods: occluded objects are not returned. To improve the results, you may try setting the `layerIds` parameter to limit the query to fewer layers.
-- * Since deck.gl is WebGL based, it can only render into a single canvas. Thus all its viewports need to be in the same canvas (unless you use multiple DeckGL instances, but that can have significant resource and performance impact).
-
-NOTE: replaces deprecated method `queryVisibleObjects`.
-
-
-### Experimental Properties
-
-These properties are considered experimental and can change in the next minor version of deck.gl. They are included as previews of functionality that is being developed.
-
-##### `viewports`
-
-A singe viewport, or an array of `Viewport`s or "Viewport Descriptors".
-
-* (`Viewport`|`Viewports[]`, optional) - A singe viewport, or an array of `Viewports` or "Viewport Descriptors".
-
-Default: If not supplied, deck.gl will try to create a `WebMercatorViewport` from other props (longitude, latitude, ...).
-
-This property should contain one or more ([`Viewport`](/docs/api-reference/viewport.md), optional)instances which represents your "camera" (essentially view and projection matrices, together with viewport width and height). By changing the `viewport` you change the view of your layers, e.g. as a result of mouse events or through programmatic animations.
-
-deck.gl will render all the viewports in order.
-
-If `viewports` is not supplied, deck.gl will look for web mercator projection parameters (latitude, longitude, zoom, bearing and pitch) and create a `WebMercatorViewport` (which is a subclass of `Viewport`).
-
-
-##### `children`
+### Children
 
 The following semantics of the standard React `children` property are considered experimental.
 
-**JSX layers**
+
+#### JSX layers
 
 It is possible to use JSX syntax to create deck.gl layers as React children of the `DeckGL` React components, instead of providing them as ES6 class instances to the `layers` prop.
+
 ```jsx
-  <DeckGL {...viewport}>
+  <DeckGL {...viewState}>
     <LineLayer id="line-layer" data={data} />
   <DeckGL />
 ```
-For more information on this syntax and its limitations, see [Using deck.gl with React](/docs/get-started/using-with-react.md) article.
+
+> Caveat: The JSX layer syntax is limitated in that it only works when the layers are direct children of the `DeckGL` component. deck.gl layers are not true React components and cannot be rendered independently by React, and the JSX support depends on deck.gl intercepting the JSX generated child elements before React tries to render them.
 
 
-**Autopositioned Children**
+#### JSX views
 
-To make it easy to use React components in combination with deck.gl viewports (e.g. to place a base map under a viewport, or add a label on top of a viewport), deck.gl can make such components automatically adjust as that viewport is added, removed or resized.
+It is possible to use JSX syntax to create deck.gl views as React children of the `DeckGL` React components, instead of providing them as ES6 class instances to the `views` prop.
 
-`DeckGL` classifies any top-level children (`props.children`) that have a `viewportId` property as "viewport base components". It will perform special processing on them as follows:
-* It resizes and repositions any `viewportId` children to precisely match the extends of the deck.gl viewport with the corresponding id.
-* It automatically hides any `viewportId` children whose id is not matched by any current deck.gl viewport.
-* It injects viewport properties (`longitude`, `latitude` etc).
-* Also injects the `visible: viewport.isMapSynched()` prop to hide base maps that cannot display per the current viewport parameters.
+```jsx
+  <DeckGL initialViewState={...viewState} layers={layers} >
+    <MapView id="map" width="50%" controller={true} >
+      <StaticMap mapboxApiAccessToken={MAPBOX_ACCESS_TOKEN} />
+    </MapView>
+    <FirstPersonView width="50%" x="50%" fovy={50} />
+  <DeckGL />
+```
+
+If a certain view id is used in both JSX views and the `views` prop, the view instance in the `views` prop has priority. This makes it possible to use the pure-JS `views` API while positioning child components in JSX:
+
+```jsx
+  const views = [
+    new MapView({id: 'map', width: '50%', controller: true}),
+    new FirstPersonView({width: '50%', x: '50%', fovy: 50})
+  ];
+
+  <DeckGL initialViewState={...viewState} layers={layers} views={views} >
+    <View id="map">
+      <StaticMap mapboxApiAccessToken={MAPBOX_ACCESS_TOKEN} />
+    </View>
+  <DeckGL />
+```
+
+
+#### Position Children in Viewport
+
+To make it easy to use React components in combination with deck.gl views (e.g. to place a base map under a view, or add a label on top of a view), deck.gl can make such components automatically adjust as that view is added, removed or resized.
+
+`DeckGL` injects its child elements with the following props:
+
+* `x` - the left offset of the current view, in pixels
+* `y` - the top offset of the current view, in pixels
+* `width` - the width of the current view, in pixels
+* `height` - the height of the current view, in pixels
+* `viewState` - the view state of the current view
+* `viewport` - the `Viewport` instance of the current view
+
+If the element is a direct child of `DeckGL`, the current view is the default (first) view.
+If the element is nested under a `<View>` tag, the current view is the one corresponding to the containing View's `id` prop.
+
+Each element is wrapped in a DOM container that:
+
+* is offset to be relative to the deck.gl view with the corresponding view id.
+* is resized to match the extent of the deck.gl view with the corresponding view id.
+
+
+#### Render callbacks
+
+You may supply a function as a child to the `DeckGL` or `View` node (see **JSX views**). The function will be called to retrieve the React children when the viewport updates.
+
+The following arguments are passed:
+
+* `x` - the left offset of the current view, in pixels
+* `y` - the top offset of the current view, in pixels
+* `width` - the width of the current view, in pixels
+* `height` - the height of the current view, in pixels
+* `viewState` - the view state of the current view
+* `viewport` - the `Viewport` instance of the current view
+
+This is useful when you need to specify custom rendering logic for a child:
+
+```jsx
+  <DeckGL {...viewState}>
+    {({x, y, width, height, viewState, viewport}) => (
+      <Marker
+        project={viewport.project}
+        longitude={-122.45}
+        latitude={37.8}
+        width={24}
+        height={24} />
+    )}
+  <DeckGL />
+```
 
 Additional Notes:
+
 * The DeckGL components own `canvas` element is added last to the child list, to sit on top of all the base components, however Z index can be used to override this.
-* Child repositioning is done with CSS styling on a wrapper div, resizing is done through width and height properties.
-* Hiding of children is performed by removing the elements from the child list
-* Children without the `viewportId` property are rendered as is.
+* Child repositioning is done with CSS styling on a wrapper div.
+* Children that do not belong to any `<View>` tag and are functions are called with the properties of the default view.
+* Children that do not belong to any `<View>` tag and are valid React elements are rendered as is.
+
+
+## Methods
+
+All [Deck](/docs/api-reference/deck.md#methods) methods are available on the `DeckGL` component.
 
 
 ## Source
-[src/react/deckgl.js](https://github.com/uber/deck.gl/blob/5.1-release/src/react/deckgl.js)
+
+[modules/react/src/deckgl.js](https://github.com/uber/deck.gl/blob/master/modules/react/src/deckgl.js)

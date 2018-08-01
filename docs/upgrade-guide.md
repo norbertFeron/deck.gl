@@ -1,5 +1,106 @@
 # Upgrade Guide
 
+## Upgrading from deck.gl v5.3 to v6.0
+
+
+#### luma.gl v6.0
+
+deck.gl v6.0 brings in luma.gl v6.0 which is a major release with a few breaking changes. The change that is most likely to affect deck.gl applications is probably that the way the `GL` constant is imported has changed. For details, see to the luma.gl [Upgrade Guide](https://luma.gl/#/documentation/overview/upgrade-guide).
+
+
+#### Pixel sizes
+
+Pixel sizes in line, icon and text layers now match their HTML/SVG counterparts. To achieve the same rendering output as v5, you should use half the previous value in the following props:
+
+* `ArcLayer.getStrokeWidth`
+* `LineLayer.getStrokeWidth`
+* `IconLayer.getSize` or `IconLayer.sizeScale`
+* `TextLayer.getSize` or `TextLayer.sizeScale`
+* `PointCloudLayer.radiusPixels`
+
+
+#### Accessors
+
+All layer accessors that support constant values have had their default values changed to constants. For example, `ScatterplotLayer`'s default `getRadius` prop is changed from `d => d.radius || 1` to `1`. All dynamic attributes now must be explicitly specified. This change makes sure that using default values results in best performance.
+
+
+#### Views and Controllers
+
+* (React only) Viewport constraint props: `maxZoom`, `minZoom`, `maxPitch`, `minPitch` are no longer supported by the `DeckGL` component. They must be specified as part of the `viewState` object.
+* (React only) `ViewportController` React component has been removed. The functionality is now built in to the `Deck` and `DeckGL` classes.
+* `Deck.onViewportChange(viewport)` etc callbacks are no longer supported. Use `Deck.onViewStateChange({viewState})`
+* `DeckGL.viewport` and `DeckGL.viewports` props are no longer supported. Use `DeckGL.views`.
+
+
+#### ScreenGridLayer
+
+`minColor` and `maxColor` props are deprecated. Use `colorRange` and `colorDomain` props.
+
+
+#### Shader Modules
+
+Some previously deprecated `project_` module GLSL functions have now been removed.
+
+
+
+## Upgrading from deck.gl v5.2 to v5.3
+
+### Viewport classes
+
+Continuing the changes that started in 5.2: while the base `Viewport` class will remain supported, the various `Viewport` subclasses are now deprecated. For now, if for projection purposes you need to create a `Viewport` instance matching one of your `View` instances you can use `View.makeViewport`:
+
+```js
+new MapView().makeViewport({width, height, viewState: {longitude, latitude, zoom}});
+```
+
+
+### Layer properties
+
+| Layer            | Removed Prop       | New Prop             | Comment |
+| ---              | --- | --- | --- |
+| `ArcLayer`       | `strokeWidth`       | `getStrokeWidth` | Can be set to constant value |
+| `LineLayer`      | `strokeWidth`       | `getStrokeWidth` | Can be set to constant value |
+
+
+### Pure JS applications
+
+Core layers are broken out from ` @deck.gl/core` to a new submodule ` @deck.gl/layers`. Non-React users of deck.gl should now install both submodules:
+
+```bash
+npm install @deck.gl/core @deck.gl/layers
+```
+
+And import layers from the new submodule instead of core:
+
+```js
+import {ScatterplotLayer} from '@deck.gl/layers';
+```
+
+Users of `deck.gl` are not affected by this change.
+
+
+## Upgrading from deck.gl v5.1 to v5.2
+
+### DeckGL component
+
+* `DeckGL.viewports` and `DeckGL.viewport` are deprecated and should be replaced with `DeckGL.views`.
+
+### Viewport classes
+
+* A number of `Viewport` subclasses have been deprecated. They should be replaced with their `View` counterparts.
+
+### Experimental Features
+
+Some experimental exports have been removed:
+
+* The experimental React controller components (`MapController` and `OrbitController`) have been removed. These are now replaced with JavaScript classes that can be used with the `Deck.controller` / `DeckGL.controller` property.
+
+
+## Upgrading from deck.gl v5 to v5.1
+
+N/A
+
+
 ## Upgrading from deck.gl v4.1 to v5
 
 ### Dependencies
@@ -50,7 +151,7 @@ Following WebGL parameters are set during DeckGL component initialization.
 
 All our layers enable depth test so we are going set this state during initialization. We are also changing blend function for more appropriate rendering when multiple elements are blended.
 
-For any custom needs, these parameters can be overwritten by updating them in [`onWebGLInitialized`](docs/api-reference/react/deckgl.md#onWebGLInitialized) callback or by passing them in `parameters` object to `drawLayer` method of `Layer` class.
+For any custom needs, these parameters can be overwritten by updating them in [`onWebGLInitialized`](/docs/api-reference/react/deckgl.md#onWebGLInitialized) callback or by passing them in `parameters` object to `drawLayer` method of `Layer` class.
 
 
 ### assembleShaders
@@ -76,11 +177,13 @@ Be aware that deck.gl 4.1 bumps the luma.gl peer dependency from 3.0 to 4.0. The
 ### Layer Life Cycle Optimization
 
 * **shouldUpdateState** - deck.gl v4.1 contains additional optimizations of the layer lifecycle and layer diffing algorithms. Most of these changes are completely under the hood but one  visible change is that the default implementation of `Layer.shouldUpdate` no longer returns true if only the viewport has changed. This means that layers that need to update state in response to changes in screen space (viewport) will need to redefine `shouldUpdate`:
+
 ```js
   shouldUpdateState({changeFlags}) {
     return changeFlags.somethingChanged; // default is now changeFlags.propsOrDataChanged;
   }
 ```
+
 Note that this change has already been done in all the provided deck.gl layers that are screen space based, including the `ScreenGridLayer` and the `HexagonLayer`.
 
 ### luma.gl `Model` class API change
@@ -101,7 +204,7 @@ new Model({gl, ...opts});
 
 Custom layers are **no longer expected** to call `assembleShaders` directly. Instead, the new `Model` class from luma.gl v4 will take shaders and the modules they are using as parameters and assemble shaders automatically.
 
-```
+```js
 // luma.gl v4
 const model = new Model(gl, {
   vs: VERTEX_SHADER,
@@ -144,12 +247,14 @@ These set of layers were deprecated in deck.gl v4, and are now removed in v5. Yo
 ### Changed Import: The `DeckGL` React component
 
 A small but breaking change that will affect all applications is that the 'deck.gl/react' import is no longer available. As of v4.0, the app is required to import deck.gl as follows:
-```
+
+```js
 // V4
 import DeckGL from 'deck.gl';
 // V3
 import DeckGL from 'deck.gl/react';
 ```
+
 While it would have been preferable to avoid this change, a significant modernization of the deck.gl build process and preparations for "tree-shaking" support combined to make it impractical to keep supporting the old import style.
 
 

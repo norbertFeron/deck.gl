@@ -19,9 +19,235 @@ Ref: http://keepachangelog.com/en/0.3.0/
 
 For Earlier Beta Releases see below
 
+### deck.gl v6.0.0 Pre Releases
+
+#### [6.0.0-beta.1] - July 4
+
+- Attribute Transition bug fix (#1996)
+- Upgrade to luma.gl 6.0.0-beta.1 (#1990)
+- Replace ScreenGridLayer with GPUScreenGridLayer (#1988)
+- More Flexible Controller API (#1984)
+- Restore prop override for regular React children (#1983)
+- Add enter parameter for transitions (#1982)
+- ScreenGridLayer: Fix cell margin bug (#1977)
+- Fix attribute transition (#1975)
+- Fix aggregation in OrthoGraphicView (#1973)
+- Implement React API RFC (#1971)
+- Add padArray util for attribute transition (#1966)
+
+#### [6.0.0-alpha.2] - June 27
+
+- Remove viewports (#1965)
+- Add needs64bitPositions() to Layer (#1963)
+- Update deck.js _pickAndCallback to discard invalid events (#1962)
+- Add Contour Layer (#1958)
+- Adding Marching-Squares utility methods (#1957)
+- GridLayer: re-project points on prop change (#1953)
+- Implement RFC: Improved 32-bit LNGLAT projection mode (#1951)
+- GPUScreenGridLayer: Provide aggregated data as picking information (#1950)
+- Initial layer prop type generator (#1943)
+- Fix path-marker-layer property passing (#1939)
+- GPUScreenGridLayer: Add colorRange and colorDomain support (#1932)
+- Deprecate ViewportController and onViewportChange (#1930)
+- Per-view controller (#1929)
+- Upgrade to luma v6 (#1928)
+- Move ViewManager out of LayerManager (#1926)
+- Add experimental GPUGridLayer (#1925)
+- GeoJsonLayer picking returns real feature (#1924)
+- Add world-space aggregation support to GPUAggregator (#1923)
+- Expose more internals (as experimental exports) (#1921)
+
+#### [6.0.0-alpha.0] - June 15
+- 6.0.0-alpha.0 (Bump luma version to 6.0.0-apha.1)
+- Bench fixes (#1915)
+- Remove commented functions from layers (#1910)
+- Data filter RFC (#1892)
+- Add transition prop forwarding for composite layers; docs (#1900)
+- Viewport transition example (#1909)
+- attribute manager cleanup (#1901)
+- Disable failing rendertests for Intel GPU (#1903)
+- Add node 10 to travis (#1898)
+- Update params per frame (#1897)
+- Fix DeckGL 5.3 doesn't fire onHover event for last frame (#1882) (#1895)
+- Update RFC catalog (#1891)
+- Remove index.html from examples (#1890)
+- Fix mapbox wrapper error when use viewState (#1885)
+- Scripting Gallery (#1879)
+- Make sure website examples start locally (#1884)
+- Update issue_template.md
+- Some example fixes (#1878)
+- Add Deck.parameters prop to enable declarative setting of initial GL params (#1832)
+- View Manager cleanup (#1864)
+
 ## Beta Releases
 
-### deck.gl v5.1 Beta Releases
+### deck.gl v5.3 Pre Releases
+#### [5.3.0-alpha.2] - April 30
+-  use baseline:hanging if advanced text metrics is not supported (#1753)
+-  Smaller viewState related fixes (#1750)
+-  Picking overlapping objects RFC implementation (#1730)
+-  Update example links in README.md (#1744)
+-  Update picking RFC (#1747)
+-  Fix standalone bundle inline version (#1746)
+-  handle right button pan in MapControls (#1745)
+-  update lite module dependency
+-  Embedded layer demo fixes (#1741)
+-  Test cleanup (#1739)
+-  Update showcases links (#1738)
+-  Make DeckGL doc refer to Deck docs (#1737)
+-  More website link fixes (#1736)
+-  Fix outdated source links (#1735)
+
+#### [5.3.0-alpha.1] - April 23
+- Bump luma.gl to 5.3.0-alpha.1
+
+### deck.gl v5.2 Pre Releases
+
+#### [5.2.0-alpha.8] - April 5
+- Bump examples to 5.2 alpha versions (#1649)
+- Bump example package.json to make it clear these are for future release (#1648)
+- fix bench browser test (#1647)
+- fix text layer issue on windows (#1645)
+- Fix without-map (#1642)
+- Initial commit of standalone js module (#1605)
+- Clean up LayerManager context handling (#1628)
+- remove wrong deck.gl version in tagmap
+- Fix OrthographicView (#1638)
+- Introduce babel 7 (#1636)
+- Fix render tests by temporarily reverting orhtographic map support (#1635)
+- Final immutable removal (#1634)
+- Improve test script speed. Fix test-browser reliability (#1632)
+- Remove polyfill. Update test scripts (#1633)
+- Text layer audit (#1627)
+- Add ScreenGrid Icon, fix doc link (#1622)
+- Update examples using new View classes and Deck/Controller integration (#1616)
+- fix attribute transition manager (#1621)
+- Integrate controllers into Deck component (#1615)
+- GpuScreenGridLayer : RFC and Fixes (#1617)
+- tagmap layer example improvements (#1620)
+- Update deck.gl whats new doc (#1589)
+- Viewport improvements, orthographic projection support (#1614)
+- View improvements (#1613)
+- Make `View` and `Deck` classes into official exports (#1612)
+- View doc updates (#1610)
+- add 3d rotation to MeshLayer (#1602)
+- Hotfix to plot layer and node tests (#1611)
+- ScreenGrid GPU Aggregation (Part-3, Add GPU Aggregation) (#1603)
+- ScreenGrid GPU Aggregation (Part-2, add support for UBO) (#1593)
+- Bump luma.gl to 5.2.0-alpha.10
+- fix website build (#1604)
+- Merge experimental SolidPolygonLayer into core-layers (#1405)
+- Move text-layer from experimental-layers to core-layers (#1590)
+- fix text layer update triggers (#1598)
+- unbold console output after test (#1596)
+- Improve text layer perf (#1597)
+- use unified projection in experimental layer shaders (#1595)
+- Webpack 4 (#1594)
+- Focal distance (#1588)
+- Split out `Attribute` class from `AttributeManager` (#1578)
+- Remove use of external asserts (#1567)
+- Create advanced-text-layer in experimental-layers (#1573)
+- bump luma.gl version to 5.2.0-alpha.9
+- fallback luma.gl to 5.2.0-alpha.3
+- Move docs
+- Standalone JS RFC (#1565)
+- Remove `prevLayers`,  move `oldProps` to layer internal state (#1553)
+- Reorganize docs (#1514)
+- ScreenGrid GPU Aggregation (Part-1, use Buffers) (#1584)
+- Address audit comments (#1580)
+- Test directory cleanup (#1577)
+- Add esnext dist and test-size script (#1559)
+- Remove invalid deprecation warning (#1575)
+- Fix MeshLayer texture rendering (#1570)
+
+#### [5.2.0-alpha.7] - Mar 23
+#### [5.2.0-alpha.6] - Mar 23
+#### [5.2.0-alpha.4] - Mar 23
+- Make new colorRange and colorDomain props experimental (#1569)
+- bump probe.gl to 1.0.0-alpha.11
+- fix memory leak by deleting unused models (#1561)
+- Allow external buffer to be Buffer instead of typed array (#1527)
+- Add TextLayer 100K test in layer browser (#1562)
+- TextLayer: Fix horizontal padding (#1554)
+- Implement unified 32 and 64 bit project interface (PR 2/2) (#1557)
+- Fix sizeScale for text layer (experimental layers 0.0.25) (#1558)
+- TextLayer: fix updateTriggers (#1555)
+- fix memory leak via oldProps (#1549)
+- verify MapboxAccessToken before build website (#1546)
+- fix bug in testLayer (#1545)
+- Hook up test-browser to npm test
+- Create states in layerManager in case of undefined stats parameter
+- bump probe.gl to 1.0.0-alpha.9
+- Screen grid colorRange colorDomain (#1522)
+- Fix bug in getMaxCount (#1539)
+- Fix quantize scale (#1537)
+- with-mapbox-map example fix (#1534)
+- Fix max count issue in bin sorter (#1535)
+- Add basic stats collection (#1529)
+- Avoid importing `prop-types` module in non-React module. (#1430)
+- Add lib dir to React submodule. (#1528)
+- Example automation testing (#1477)
+- Consolidate test scripts (#1523)
+- Reorganize reflection effect (#1524)
+- Implement unified 32 and 64 bit project interface (#1493)
+- Fix test harness exit code on failure (#1520)
+- Fix minor typo in constants.js (#1521)
+- Update shader module docs (#1411)
+- WindDemo: update using luma.gl Transform class (#1374)
+- Update Attribute transitions to use new luma.gl `Transform` API (#1464)
+- disable path-marker rendering test (#1518)
+
+#### [5.2.0-alpha.3] - Mar 8
+- Fix deck.gl-test-utils dependency issues
+- Probe.gl logging
+
+#### [5.2.0-alpha.2] - Mar 8
+- Bump luma.gl dependency to v5.2.0-alpha.3
+- deck.gl-test-utils v5.2.0-alpha.1 (#1515)
+- Test documentation improvements (#1512)
+
+#### [5.2.0-alpha.1] - Mar 4
+
+## Official Releases
+
+#### [5.1.0]
+- Fix crash during pickVisibleObjects (#1365)
+- Experiment: bezier curve layer (#1366)
+- Add JSX support to DeckGL component and remove jsx-layers example (#1362)
+- Update composite layers to use multiple prop objects (#1353)
+- link to remote docs (#1364)
+- Wind demo: update using newest luma.gl TF API (#1346)
+- Prop code preparation/cleanup (#1357)
+- Use latest luma.gl transform feedback features (#1318)
+- Move fp64 viewport uniform generation to project64 module's getUniforms (#1292)
+- Merge react-map-gl's map interaction (#1330)
+- Travis CI fix: Reduced, but working set of test cases (#1355)
+- Property Copy Reduction (#1341)
+- Use Object.prototype to speed up default prop setting (#1336)
+- fix experimental PolygonLayer (#1316)
+- Upgrade react-map-gl and math.gl versions in examples (#1313)
+- Fix text layer redraw flag clearing (#1314)
+- [Doc] Fix of layer attribute typo (#1311)
+- Attribute Transition: Initial Implementation (#981)
+
+
+### deck.gl v5.0 - Dec 21
+- Add links to new examples. (#1272)
+- Address TODO in docs. (#1270)
+- Use the deprecation support in shader modules (#1271)
+- fix double model generation (#1268)
+- Ortho zooming example (#1266)
+- More precise offset projection (#1265)
+- Examples start script (#1263)
+- experimental-layers 0.0.16
+- Fix examples with react-map-gl alpha (#1256)
+- Linter (prettier) changes (#1262)
+- Remove old uniforms (#1261)
+- remove duplicate TextLayer code (#1258)
+- enable lnglat_offset mode (#1245)
+- Remove deprecated uniforms (#1257)
+
+## Beta Releases
 
 #### [5.1.0-beta.1] - Jan 31
 - Fix crash during pickVisibleObjects (#1365)
@@ -42,26 +268,6 @@ For Earlier Beta Releases see below
 - Fix text layer redraw flag clearing (#1314)
 - [Doc] Fix of layer attribute typo (#1311)
 - Attribute Transition: Initial Implementation (#981)
-
-## Official Releases
-
-### deck.gl v5.0 - Dec 21
-- Add links to new examples. (#1272)
-- Address TODO in docs. (#1270)
-- Use the deprecation support in shader modules (#1271)
-- fix double model generation (#1268)
-- Ortho zooming example (#1266)
-- More precise offset projection (#1265)
-- Examples start script (#1263)
-- experimental-layers 0.0.16
-- Fix examples with react-map-gl alpha (#1256)
-- Linter (prettier) changes (#1262)
-- Remove old uniforms (#1261)
-- remove duplicate TextLayer code (#1258)
-- enable lnglat_offset mode (#1245)
-- Remove deprecated uniforms (#1257)
-
-## Beta Releases
 
 ### deck.gl v5.0 Beta Releases
 

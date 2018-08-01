@@ -1,10 +1,10 @@
 import {COORDINATE_SYSTEM} from 'deck.gl';
-import PlotLayer from '../../../plot/plot-layer';
+import PlotLayer from '../../../website/plot/plot-layer';
 
 // TODO - add point cloud layer for COORDINATE_SYSTEM.IDENTITY
 
 // import {PointCloudLayer} from 'deck.gl';
-// import dataSamples from '../immutable-data-samples';
+// import * as dataSamples from '../data-samples';
 // import {scaleLinear} from 'd3-scale';
 
 // const LIGHT_SETTINGS = {
@@ -27,7 +27,7 @@ function getScale({min, max}) {
 // export default class DeckGLOverlay extends Component {
 // const {viewport, resolution, showAxis, equation} = this.props;
 
-const EQUATION = (x, y) => Math.sin(x * x + y * y) * x / Math.PI;
+const EQUATION = (x, y) => (Math.sin(x * x + y * y) * x) / Math.PI;
 
 const PlotLayerInfovisExample = {
   layer: PlotLayer,

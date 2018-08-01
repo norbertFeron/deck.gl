@@ -7,14 +7,18 @@
 
 // avoid destructuring for older Node version support
 const resolve = require('path').resolve;
-const webpack = require('webpack');
 
 const LIB_DIR = resolve(__dirname, '..');
-const SRC_DIR = resolve(LIB_DIR, './src');
+const SRC_DIR = resolve(LIB_DIR, './modules');
+
+const ALIASES = require('../aliases')('src');
 
 // Support for hot reloading changes to the deck.gl library:
 function makeLocalDevConfig(EXAMPLE_DIR = LIB_DIR) {
   return {
+    // TODO - Uncomment when all examples use webpack 4 for faster bundling
+    // mode: 'development',
+
     // suppress warnings about bundle size
     devServer: {
       stats: {
@@ -25,13 +29,9 @@ function makeLocalDevConfig(EXAMPLE_DIR = LIB_DIR) {
     devtool: 'source-map',
 
     resolve: {
-      alias: {
-        // For importing modules that are not exported at root
-        'deck.gl/dist': SRC_DIR,
-        // Imports the deck.gl library from the src directory in this repo
-        'deck.gl': SRC_DIR,
-        // Imports the deck.gl library from the src directory in this repo
-        'deck.gl-layers': resolve(SRC_DIR, './experimental-layers/src'),
+      // mainFields: ['esnext', 'module', 'main'],
+
+      alias: Object.assign({}, ALIASES, {
         // Use luma.gl specified by root package.json
         'luma.gl': resolve(LIB_DIR, './node_modules/luma.gl'),
         // Important: ensure shared dependencies come from the main node_modules dir
@@ -40,7 +40,7 @@ function makeLocalDevConfig(EXAMPLE_DIR = LIB_DIR) {
         'viewport-mercator-project': resolve(LIB_DIR, './node_modules/viewport-mercator-project'),
         seer: resolve(LIB_DIR, './node_modules/seer'),
         react: resolve(LIB_DIR, './node_modules/react')
-      }
+      })
     },
     module: {
       rules: [
@@ -51,9 +51,7 @@ function makeLocalDevConfig(EXAMPLE_DIR = LIB_DIR) {
           enforce: 'pre'
         }
       ]
-    },
-    // Optional: Enables reading mapbox token from environment variable
-    plugins: [new webpack.EnvironmentPlugin(['MapboxAccessToken'])]
+    }
   };
 }
 
@@ -80,7 +78,7 @@ const BUBLE_CONFIG = {
 function addLocalDevSettings(config, exampleDir) {
   const LOCAL_DEV_CONFIG = makeLocalDevConfig(exampleDir);
   config = Object.assign({}, LOCAL_DEV_CONFIG, config);
-  config.resolve = config.resolve || {};
+  config.resolve = Object.assign({}, LOCAL_DEV_CONFIG.resolve, config.resolve || {});
   config.resolve.alias = config.resolve.alias || {};
   Object.assign(config.resolve.alias, LOCAL_DEV_CONFIG.resolve.alias);
 
@@ -104,14 +102,13 @@ module.exports = (config, exampleDir) => env => {
   if (env && env.local) {
     config = addLocalDevSettings(config, exampleDir);
     config = addBubleSettings(config);
-    // console.warn(JSON.stringify(config, null, 2));
   }
 
   // npm run start-es6 does not transpile the lib
   if (env && env.es6) {
     config = addLocalDevSettings(config, exampleDir);
-    // console.warn(JSON.stringify(config, null, 2));
   }
 
+  // console.warn(JSON.stringify(config, null, 2)); // uncomment to debug config
   return config;
 };

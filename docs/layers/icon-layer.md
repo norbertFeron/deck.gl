@@ -20,15 +20,31 @@ const App = ({data, viewport}) => {
   /**
    * Data format:
    * [
-   *   {position: [-122.4, 37.7], icon: 'marker', size: 24, color: [255, 0, 0]},
+   *   {name: 'Colma (COLM)', address: '365 D Street, Colma CA 94014', exits: 4214, coordinates: [-122.466233, 37.684638]},
    *   ...
    * ]
    */
   const layer = new IconLayer({
     id: 'icon-layer',
     data,
-    iconAtlas: '/path/to/image.png',
-    iconMapping: ICON_MAPPING
+    pickable: true,
+    iconAtlas: 'images/icon-atlas.png',
+    iconMapping: {
+      marker: {
+        x: 0,
+        y: 0,
+        width: 128,
+        height: 128,
+        anchorY: 128,
+        mask: true
+      }
+    },
+    sizeScale: 15,
+    getPosition: d => d.coordinates,
+    getIcon: d => 'marker',
+    getSize: d => 5,
+    getColor: d => [Math.sqrt(d.exits), 140, 0],
+    onHover: ({object}) => setTooltip(`${object.name}\n${object.address}`)
   });
 
   return (<DeckGL {...viewport} layers={[layer]} />);
@@ -45,67 +61,78 @@ Inherits from all [Base Layer](/docs/api-reference/layer.md) properties.
 
 Atlas image url or texture
 
-##### `iconMapping` (Object, required)
+##### `iconMapping` (Object | String, required)
 
 Icon names mapped to icon definitions. Each icon is defined with the following values:
 
-  - `x`: x position of icon on the atlas image
-  - `y`: y position of icon on the atlas image
-  - `width`: width of icon on the atlas image
-  - `height`: height of icon on the atlas image
-  - `anchorX`: horizontal position of icon anchor. Default: half width.
-  - `anchorY`: vertical position of icon anchor. Default: half height.
-  - `mask`: whether icon is treated as a transparency mask.
+* `x`: x position of icon on the atlas image
+* `y`: y position of icon on the atlas image
+* `width`: width of icon on the atlas image
+* `height`: height of icon on the atlas image
+* `anchorX`: horizontal position of icon anchor. Default: half width.
+* `anchorY`: vertical position of icon anchor. Default: half height.
+* `mask`: whether icon is treated as a transparency mask.
   If `true`, user defined color is applied.
   If `false`, pixel color from the image is applied.
   Default: `false`
 
 ##### `sizeScale` (Number, optional)
 
-- Default: `1`
+* Default: `1`
 
 Icon size multiplier.
 
 ##### `fp64` (Boolean, optional)
 
-- Default: `false`
+* Default: `false`
 
 Whether the layer should be rendered in high-precision 64-bit mode
 
 ### Data Accessors
 
-##### `getPosition` (Function, optional)
+##### `getPosition` (Function, optional) ![transition-enabled](https://img.shields.io/badge/transition-enabled-green.svg?style=flat-square")
 
-- Default: `d => d.position`
+* Default: `d => d.position`
 
 Method called to retrieve the position of each object, returns `[lng, lat, z]`.
 
 ##### `getIcon` (Function, optional)
 
-- Default: `d => d.icon`
+* Default: `d => d.icon`
 
 Method called to retrieve the icon name of each object, returns string.
 
-##### `getSize` (Function, optional)
+##### `getSize` (Function|Number, optional) ![transition-enabled](https://img.shields.io/badge/transition-enabled-green.svg?style=flat-square")
 
-- Default: `d => d.size || 1`
+* Default: `1`
 
-Method called to retrieve the height of each icon, returns a number. Unit is pixels.
+The height of each object, in pixels.
 
-##### `getColor` (Function, optional)
+* If a number is provided, it is used as the size for all objects.
+* If a function is provided, it is called on each object to retrieve its size.
 
-- Default: `d => d.color || [0, 0, 0, 255]`
 
-Method called to retrieve the color of each object, returns `[r, g, b, a]`.
-If the alpha component is not supplied, it is set to `255`.
+##### `getColor` (Function|Array, optional) ![transition-enabled](https://img.shields.io/badge/transition-enabled-green.svg?style=flat-square")
 
-##### `getAngle` (Function, optional)
+* Default: `[0, 0, 0, 255]`
 
-- Default: `d => d.angle || 0`
+The rgba color of each object, in `r, g, b, [a]`. Each component is in the 0-255 range.
 
-Method called to retrieve the rotating angle (in degree) of each object, returns a number.
+* If an array is provided, it is used as the color for all objects.
+* If a function is provided, it is called on each object to retrieve its color.
+
+
+##### `getAngle` (Function|Number, optional) ![transition-enabled](https://img.shields.io/badge/transition-enabled-green.svg?style=flat-square")
+
+* Default: `0`
+
+The rotating angle  of each object, in degrees.
+
+* If a number is provided, it is used as the angle for all objects.
+* If a function is provided, it is called on each object to retrieve its angle.
+
 
 ## Source
 
-[src/core-layers/icon-layer](https://github.com/uber/deck.gl/tree/5.1-release/src/core-layers/icon-layer)
+[modules/core/src/core-layers/icon-layer](https://github.com/uber/deck.gl/tree/master/modules/layers/src/icon-layer)
 

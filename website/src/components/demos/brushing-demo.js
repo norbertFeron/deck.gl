@@ -2,16 +2,12 @@ import React, {Component} from 'react';
 
 import {MAPBOX_STYLES, DATA_URI} from '../../constants/defaults';
 import {readableInteger} from '../../utils/format-utils';
-import BrushingOverlay, {inFlowColors, outFlowColors}
-  from '../../../../examples/brushing/deckgl-overlay';
+import {App, INITIAL_VIEW_STATE, inFlowColors, outFlowColors} from 'website-examples/brushing/app';
 
 const colorRamp = inFlowColors.slice().reverse().concat(outFlowColors)
   .map(color => `rgb(${color.join(',')})`);
 
 export default class BrushingDemo extends Component {
-  static get trackMouseMove() {
-    return true;
-  }
 
   static get data() {
     return {
@@ -31,10 +27,11 @@ export default class BrushingDemo extends Component {
   }
 
   static get viewport() {
-    return {
-      ...BrushingOverlay.defaultViewport,
-      mapStyle: MAPBOX_STYLES.LIGHT
-    };
+    return INITIAL_VIEW_STATE;
+  }
+
+  static get mapStyle() {
+    return MAPBOX_STYLES.LIGHT;
   }
 
   static renderInfo(meta) {
@@ -69,55 +66,17 @@ export default class BrushingDemo extends Component {
     );
   }
 
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      hoveredObject: null
-    };
-  }
-
-  _onHover({x, y, object}) {
-    this.setState({x, y, hoveredObject: object});
-  }
-
-  _renderTooltip() {
-    const {x, y, hoveredObject} = this.state;
-
-    if (!hoveredObject) {
-      return null;
-    }
-
-    return (
-      <div className="tooltip"
-           style={{left: x, top: y}}>
-        <div>{hoveredObject.name}</div>
-        <div>{`Net gain: ${hoveredObject.net}`}</div>
-      </div>
-    );
-  }
-
   render() {
-    const {viewport, params, data, mousePosition, mouseEntered} = this.props;
-
-    if (!data) {
-      return null;
-    }
+    const {params} = this.props;
 
     return (
-      <div>
-        {this._renderTooltip()}
-        <BrushingOverlay viewport={viewport}
-          data={data}
-          mousePosition={mousePosition}
-          mouseEntered={mouseEntered}
-          enableBrushing={params.enableBrushing.value}
-          strokeWidth={params.lineWidth.value}
-          brushRadius={params.brushRadius.value}
-          opacity={params.opacity.value}
-          onHover={this._onHover.bind(this)}
-        />
-      </div>
+      <App
+        {...this.props}
+        enableBrushing={params.enableBrushing.value}
+        strokeWidth={params.lineWidth.value}
+        brushRadius={params.brushRadius.value}
+        opacity={params.opacity.value}
+      />
     );
   }
 }

@@ -24,7 +24,15 @@ const App = ({data, viewport}) => {
   const layer = new PointCloudLayer({
     id: 'point-cloud-layer',
     data,
-    radiusPixels: 20
+    pickable: false,
+    coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
+    coordinateOrigin: [-122.4, 37.74],
+    radiusPixels: 4,
+    getPosition: d => d.position,
+    getNormal: d => d.normal,
+    getColor: d => d.color,
+    lightSettings: {},
+    onHover: ({object}) => setTooltip(object.position.join(', '))
   });
 
   return (<DeckGL {...viewport} layers={[layer]} />);
@@ -39,15 +47,16 @@ Inherits from all [Base Layer](/docs/api-reference/layer.md) properties.
 
 ##### `radiusPixels` (Number, optional)
 
-- Default: `10`
+* Default: `10`
 
 Global radius of all points.
 
 ##### `fp64` (Boolean, optional)
 
-- Default: `false`
+* Default: `false`
 
 Whether the layer should be rendered in high-precision 64-bit mode
+
 ##### `lightSettings` (Object, optional) **EXPERIMENTAL**
 
 This is an object that contains light settings for the point cloud.
@@ -55,27 +64,32 @@ Be aware that this prop will likely be changed in a future version of deck.gl.
 
 ### Data Accessors
 
-##### `getPosition` (Function, optional)
+##### `getPosition` (Function, optional) ![transition-enabled](https://img.shields.io/badge/transition-enabled-green.svg?style=flat-square")
 
-- Default: `object => object.position`
+* Default: `object => object.position`
 
 Method called to retrieve the position of each object.
 
-##### `getNormal` (Function, optional)
+##### `getNormal` (Function|Array, optional) ![transition-enabled](https://img.shields.io/badge/transition-enabled-green.svg?style=flat-square")
 
-- Default: `object => object.normal`
+* Default: `[0, 0, 1]`
 
-Method called to retrieve the normal of each object.
+The normal of each object, in `[nx, ny, nz]`.
 
-##### `getColor` (Function, optional)
+* If an array is provided, it is used as the normal for all objects.
+* If a function is provided, it is called on each object to retrieve its normal.
 
-- Default: `object => object.color`
 
-Method called to retrieve the rgba color of each object.
-* If the alpha parameter is not provided, it will be set to `255`.
-* If the method does not return a value for the given object, fallback to
-`[0, 0, 0, 255]`.
+##### `getColor` (Function|Array, optional) ![transition-enabled](https://img.shields.io/badge/transition-enabled-green.svg?style=flat-square")
+
+* Default: `[0, 0, 0, 255]`
+
+The rgba color of each object, in `r, g, b, [a]`. Each component is in the 0-255 range.
+
+* If an array is provided, it is used as the color for all objects.
+* If a function is provided, it is called on each object to retrieve its color.
 
 ## Source
-[src/core-layers/point-cloud-layer](https://github.com/uber/deck.gl/tree/5.1-release/src/core-layers/point-cloud-layer)
+
+[modules/core/src/core-layers/point-cloud-layer](https://github.com/uber/deck.gl/tree/master/modules/layers/src/point-cloud-layer)
 

@@ -11,7 +11,9 @@
   height: 100%;
 }
 .toc {
-  width: 240px;
+  min-width: 240px;
+  max-width: 320px;
+  width: 30vw;
   height: 100%;
   background: #fff;
   overflow-y: auto;
@@ -31,13 +33,21 @@
   }
   li {
     list-style: none;
-    line-height: 40px;
   }
   a {
-    display: block;
+    display: inline-block;
   }
-  .link {
-    padding-left: 28px;
+  .badge {
+    display: inline-block;
+    background: $white-40;
+    color: $white;
+    font-size: smaller;
+    padding: 0 4px;
+    border-radius: 4px;
+    margin: 0 -40px 0 6px;
+  }
+  .link, h4 {
+    line-height: 40px;
     color: $black-20;
     background: transparent;
     border-style: solid;
@@ -62,6 +72,7 @@
     letter-spacing: 2px;
     padding: 24px 0 8px 24px;
     color: $white-40;
+    display: block;
   }
   .list-header:not(.active):not(.expanded):before {
     content: '+';
@@ -100,6 +111,7 @@
   pointer-events: none;
 }
 .options-panel {
+  position: relative;
   width: 284px;
   background: #fff;
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.15);
@@ -183,6 +195,41 @@
     width: 12px;
     height: 12px;
   }
+  .spinner {
+    height: 18px;
+    line-height: 18px;
+    font-size: 10px;
+
+    >div {
+      white-space: nowrap;
+      left: 0;
+      bottom: 0;
+      position: absolute;
+      height: 18px;
+      padding-left: 20px;
+      transition: width 0.5s;
+    }
+    .spinner--fill {
+      background: $primary;
+      color: $white;
+      overflow: hidden;
+    }
+    .spinner--text {
+      color: $black-40;
+    }
+
+    &.done {
+      height: 0 !important;
+      line-height: 0;
+      font-size: 0;
+      transition: height 0.5s 1s;
+
+      >div {
+        height: 0 !important;
+        transition: height 0.5s 1s;
+      }
+    }
+  }
 }
 code {
   font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace !important;
@@ -223,18 +270,19 @@ code {
   }
 }
 
-@media (max-width: 576px) {
+@media (max-width: 768px) {
   .flexbox--row {
     display: block;
   }
   .toc {
     position: absolute;
     width: 100vw;
+    max-width: initial;
     height: 0;
     z-index: 9;
 
     >div {
-      padding-top: 128px;
+      padding-top: 220px;
     }
   }
   .toc.open {
@@ -249,7 +297,7 @@ code {
     >div > *, hr, .input {
       display: none;
     }
-    >div:before {
+    &:before {
       position: absolute;
       top: 12px;
       right: 12px;
@@ -257,6 +305,16 @@ code {
       font-size: 24px;
       font-family: 'deckgl';
       content: "\e906";
+    }
+    >.spinner {
+      height: 3px;
+      line-height: 0;
+      font-size: 0;
+
+      .spinner--fill {
+        height: 3px;
+        display: block;
+      }
     }
     h3 {
       display: block;
@@ -271,11 +329,6 @@ code {
 }
 
 .icon-demo {
-  position: relative;
-
-  &.clickable {
-    cursor: pointer;
-  }
   .tooltip {
     padding: 4px 12px;
     max-width: 240px;

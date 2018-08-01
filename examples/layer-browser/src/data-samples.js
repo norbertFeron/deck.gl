@@ -66,6 +66,11 @@ for (let i = 0; i < path.length - 1; ++i) {
 
 export const points = allPoints;
 
+// texts of random size in [24, 48]
+export const texts = allPoints.map(p =>
+  Object.assign({}, p, {size: Math.floor(Math.random() * 24) + 24})
+);
+
 export const worldGrid = pointsToWorldGrid(points, 500);
 
 export const zigzag = [
@@ -74,14 +79,14 @@ export const zigzag = [
       .fill(0)
       .map((d, i) => [
         positionOrigin[0] + i * i * 0.001,
-        positionOrigin[1] + Math.cos(i * Math.PI) * 0.2 / (i + 4)
+        positionOrigin[1] + (Math.cos(i * Math.PI) * 0.2) / (i + 4)
       ])
   },
   {
     path: new Array(6)
       .fill(0)
       .map((d, i) => [
-        positionOrigin[0] + Math.cos(i * Math.PI) * 0.05 / (i + 4),
+        positionOrigin[0] + (Math.cos(i * Math.PI) * 0.05) / (i + 4),
         positionOrigin[1] - i * i * 0.0003
       ])
   },
@@ -115,7 +120,7 @@ export function getPointCloud() {
       const xCount = Math.floor(cosy * RESOLUTION * 2) + 1;
 
       for (let xIndex = 0; xIndex < xCount; xIndex++) {
-        const x = xIndex / xCount * Math.PI * 2;
+        const x = (xIndex / xCount) * Math.PI * 2;
         const cosx = Math.cos(x);
         const sinx = Math.sin(x);
 
@@ -130,20 +135,64 @@ export function getPointCloud() {
   return _pointCloud;
 }
 
+const SF_BOUNDING_BOX = [-122.6, 37.6, -122.2, 37.9];
+
+function generatePointFeatures(featureCount) {
+  const features = pointGrid(featureCount, SF_BOUNDING_BOX).map(coordinate => ({
+    type: 'Feature',
+    geometry: {type: 'Point', coordinates: coordinate}
+  }));
+  return features;
+}
+
+function generateMultiPointFeatures(featureCount, pointsPerFeature) {
+  const allMultiPoints = pointGrid(featureCount * pointsPerFeature, SF_BOUNDING_BOX);
+  const features = [];
+  for (let featureIndex = 0; featureIndex < featureCount; featureIndex++) {
+    const multiPoints = allMultiPoints.slice(
+      featureIndex * pointsPerFeature,
+      featureIndex * pointsPerFeature + pointsPerFeature
+    );
+    features.push({
+      type: 'Feature',
+      geometry: {type: 'MultiPoint', coordinates: multiPoints}
+    });
+  }
+  return features;
+}
+
 let _points100K = null;
 export function getPoints100K() {
-  _points100K = _points100K || pointGrid(1e5, [-122.6, 37.6, -122.2, 37.9]);
+  _points100K = _points100K || pointGrid(1e5, SF_BOUNDING_BOX);
   return _points100K;
 }
 
 let _points1M = null;
 export function getPoints1M() {
-  _points1M = _points1M || pointGrid(1e6, [-122.6, 37.6, -122.2, 37.9]);
+  _points1M = _points1M || pointGrid(1e6, SF_BOUNDING_BOX);
   return _points1M;
+}
+
+let _points5M = null;
+export function getPoints5M() {
+  _points5M = _points5M || pointGrid(5 * 1e6, SF_BOUNDING_BOX);
+  return _points5M;
 }
 
 let _points10M = null;
 export function getPoints10M() {
-  _points10M = _points10M || pointGrid(1e7, [-122.6, 37.6, -122.2, 37.9]);
+  _points10M = _points10M || pointGrid(1e7, SF_BOUNDING_BOX);
   return _points10M;
+}
+
+let _pointFeatures1M = null;
+export function getPointFeatures1M() {
+  _pointFeatures1M = _pointFeatures1M || generatePointFeatures(1e6);
+  return _pointFeatures1M;
+}
+
+let _multiPointFeatures100K = null;
+export function getMultiPointFeatures100K() {
+  _multiPointFeatures100K = _multiPointFeatures100K || generateMultiPointFeatures(1e5, 10);
+  return _multiPointFeatures100K;
 }

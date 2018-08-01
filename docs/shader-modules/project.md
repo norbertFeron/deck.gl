@@ -28,10 +28,12 @@ void main(void) {
 The JavaScript uniforms are extracted mainly from the viewport with a few additional parameters (which deck.gl supplies from `LayerManager` state or `Layer` props of course).
 
 Provided by `LayerManager`:
+
 * `viewport`
 * `devicePixelRatio`
 
 Provided by `Layer` props:
+
 * `coordinateSystem`
 * `coordinateOrigin`
 * `modelMatrix`
@@ -39,7 +41,7 @@ Provided by `Layer` props:
 
 ## GLSL Uniforms
 
-The GLSL uniforms of the `project` module are quite central to shader code and are often needed by other shader modules (in particular for lighting calculations, or screen space type calculations), so to avoid having duplicate uniforms, some `project` uniforms are considered documented and stable and can be used directly in other modules.
+Uniform names are not considered part of the official API of shader modules and can potentially change between minor releases, but are documented for applications that need this level of access. Use the module's public GLSL functions instead of directly accessing uniforms when possible.
 
 | Uniform | Type | Description |
 | --- | --- | --- |
@@ -48,7 +50,12 @@ The GLSL uniforms of the `project` module are quite central to shader code and a
 | project_uViewportSize | vec2 | size of viewport in pixels |
 | project_uDevicePixelRatio | float | device pixel ratio of current viewport (value depends on `useDevicePixels` prop) |
 | project_uFocalDistance | float | distance where "pixel sizes" are display in 1:1 ratio (modulo `devicePixelRatio`) |
-| project_uCameraPosition | float | position of camera in world space |
+| project_uCameraPosition | vec3 | position of camera in world space |
+| project_uCoordinateSystem | float | COORDINATE_SYSTEM enum |
+| project_uCenter | float | coordinate origin in world space |
+| project_uScale | float | Web Mercator scale (2^zoom) |
+| project_uPixelsPerMeter | vec3 | Web Mercator pixels per meter near the current viewport center |
+| project_uPixelsPerDegree | vec3 | Web Mercator pixels per degree near the current viewport center |
 
 
 ## GLSL Functions
@@ -94,8 +101,7 @@ Converts the given number of pixels to a clipspace offset that can be added to a
 
 `vec4 project_pixels_to_clipspace(vec2 pixels)`
 
-* `pixels` (`vec2`) - adjustment in logical pixels
-Returns values in clip space offsets that can be added directly to `gl_Position`
+* `pixels` (`vec2`) - adjustment in logical pixels. Returns values in clip space offsets that can be added directly to `gl_Position`
 
 
 ## Remarks

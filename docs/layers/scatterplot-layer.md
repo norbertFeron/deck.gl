@@ -17,15 +17,22 @@ const App = ({data, viewport}) => {
   /**
    * Data format:
    * [
-   *   {position: [-122.4, 37.7], radius: 5, color: [255, 0, 0]},
+   *   {name: 'Colma (COLM)', code:'CM', address: '365 D Street, Colma CA 94014', exits: 4214, coordinates: [-122.466233, 37.684638]},
    *   ...
    * ]
    */
   const layer = new ScatterplotLayer({
     id: 'scatterplot-layer',
     data,
-    radiusScale: 100,
-    outline: false
+    pickable: true,
+    opacity: 0.8,
+    radiusScale: 6,
+    radiusMinPixels: 1,
+    radiusMaxPixels: 100,
+    getPosition: d => d.coordinates,
+    getRadius: d => Math.sqrt(d.exits),
+    getColor: d => [255, 140, 0],
+    onHover: ({object}) => setTooltip(`${object.name}\n${object.address}`)
   });
 
   return (<DeckGL {...viewport} layers={[layer]} />);
@@ -40,64 +47,67 @@ Inherits from all [Base Layer](/docs/api-reference/layer.md) properties.
 
 ##### `radiusScale` (Number, optional)
 
-- Default: `1`
+* Default: `1`
 
 A global radius multiplier for all points.
 
 ##### `outline` (Boolean, optional)
 
-- Default: `false`
+* Default: `false`
 
 Only draw outline of points.
 
 ##### `strokeWidth` (Number, optional)
 
-- Default: `1`
+* Default: `1`
 
 Width of the outline, in pixels. Requires `outline` to be `true`.
 
 ##### `radiusMinPixels` (Number, optional)
 
-- Default: `0`
+* Default: `0`
 
 The minimum radius in pixels.
 
 ##### `radiusMaxPixels` (Number, optional)
 
-- Default: `Number.MAX_SAFE_INTEGER`
+* Default: `Number.MAX_SAFE_INTEGER`
 
 The maximum radius in pixels.
 
 ##### `fp64` (Boolean, optional)
 
-- Default: `false`
+* Default: `false`
 
 Whether the layer should be rendered in high-precision 64-bit mode.
 
 ### Data Accessors
 
-##### `getPosition` (Function, optional)
+##### `getPosition` (Function, optional) ![transition-enabled](https://img.shields.io/badge/transition-enabled-green.svg?style=flat-square")
 
-- Default: `object => object.position`
+* Default: `object => object.position`
 
 Method called to retrieve the position of each object.
 
-##### `getRadius` (Function, optional)
+##### `getRadius` (Function|Number, optional) ![transition-enabled](https://img.shields.io/badge/transition-enabled-green.svg?style=flat-square")
 
-- Default: `object => object.radius`
+* Default: `1`
 
-Method called to retrieve the radius of each object.
+The radius of each object, in meters.
 
-##### `getColor` (Function, optional)
+* If a number is provided, it is used as the radius for all objects.
+* If a function is provided, it is called on each object to retrieve its radius.
 
-- Default: `object => object.color`
+##### `getColor` (Function|Array, optional) ![transition-enabled](https://img.shields.io/badge/transition-enabled-green.svg?style=flat-square")
 
-Method called to retrieve the rgba color of each object.
-* If the alpha parameter is not provided, it will be set to `255`.
-* If the method does not return a value for the given object, fallback to
-`[0, 0, 0, 255]`.
+* Default: `[0, 0, 0, 255]`
+
+The rgba color of each object, in `r, g, b, [a]`. Each component is in the 0-255 range.
+
+* If an array is provided, it is used as the color for all objects.
+* If a function is provided, it is called on each object to retrieve its color.
 
 ## Source
 
-[src/core-layers/scatterplot-layer](https://github.com/uber/deck.gl/tree/5.1-release/src/core-layers/scatterplot-layer)
+[modules/core/src/core-layers/scatterplot-layer](https://github.com/uber/deck.gl/tree/master/modules/layers/src/scatterplot-layer)
 

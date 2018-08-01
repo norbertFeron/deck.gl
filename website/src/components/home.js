@@ -3,20 +3,26 @@ import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import Stats from 'stats.js';
 
-import {updateMap, setHeaderOpacity} from '../actions/app-actions';
-import Map from './map';
-import ViewportAnimation from '../utils/map-utils';
+import {updateMapState, updateMapSize, setHeaderOpacity} from '../actions/app-actions';
+import DemoLauncher from './demo-launcher';
+import TWEEN from '@tweenjs/tween.js';
+import HomeDemo from './demos/home-demo';
 
 class Home extends Component {
   constructor(props) {
     super(props);
     this.state = {};
-    this.cameraAnimation = ViewportAnimation.fly(
-      {bearing: 0},
-      {bearing: -15},
-      29000,
-      this.props.updateMap
-    ).easing(ViewportAnimation.Easing.Sinusoidal.InOut)
+
+    const viewport = {...HomeDemo.viewport};
+
+    TWEEN.removeAll();
+    this.cameraAnimation = new TWEEN.Tween(viewport).to(
+      {...viewport, bearing: -15},
+      29000
+    ).easing(TWEEN.Easing.Sinusoidal.InOut)
+    .onUpdate(function tweenUpdate() {
+      props.updateMapState({...viewport}); // eslint-disable-line
+    })
     .repeat(Infinity)
     .yoyo(true);
   }
@@ -32,6 +38,7 @@ class Home extends Component {
     this.refs.fps.appendChild(this._stats.dom);
 
     const calcFPS = () => {
+      TWEEN.update();
       this._stats.begin();
       this._stats.end();
       this._animateRef = window.requestAnimationFrame(calcFPS);
@@ -53,7 +60,7 @@ class Home extends Component {
     const container = this.refs.banner;
     const width = container.clientWidth;
     const height = container.clientHeight;
-    this.props.updateMap({width, height});
+    this.props.updateMapSize({width, height});
   }
 
   _onScroll() {
@@ -69,7 +76,7 @@ class Home extends Component {
 
         <section ref="banner" id="banner">
           <div className="hero">
-            <Map demo="HomeDemo" isInteractive={false} />
+            <DemoLauncher key="home-demo" demo="HomeDemo" isInteractive={false} />
           </div>
           <div className="container soft-left">
             <h1>deck.gl</h1>
@@ -143,5 +150,5 @@ class Home extends Component {
 
 export default connect(
   state => ({}),
-  {updateMap, setHeaderOpacity}
+  {updateMapState, updateMapSize, setHeaderOpacity}
 )(Home);

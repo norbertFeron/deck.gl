@@ -2,7 +2,9 @@ const {resolve, join} = require('path');
 const webpack = require('webpack');
 
 const rootDir = join(__dirname, '..');
-const libSources = join(rootDir, 'src');
+const libSources = join(rootDir, 'modules');
+
+const ALIASES = require('../aliases')('src');
 
 // Otherwise modules imported from outside this directory does not compile
 // Seems to be a Babel bug
@@ -22,6 +24,11 @@ const COMMON_CONFIG = {
 
   entry: ['./src/main'],
 
+  output: {
+    path: resolve(__dirname, './dist'),
+    filename: 'bundle.js'
+  },
+
   module: {
     rules: [
       {
@@ -33,7 +40,7 @@ const COMMON_CONFIG = {
         exclude: [/node_modules/]
       }, {
         test: /\.scss$/,
-        loaders: ['style-loader', 'css-loader', 'sass-loader', 'autoprefixer-loader']
+        loaders: ['style-loader', 'css-loader', 'sass-loader']
       }, {
         test: /\.(eot|svg|ttf|woff|woff2|gif|jpe?g|png)$/,
         loader: 'url-loader'
@@ -46,19 +53,13 @@ const COMMON_CONFIG = {
   },
 
   resolve: {
-    alias: {
-      // For importing modules that are not exported at root
-      'deck.gl/dist': libSources,
-      'deck.gl': libSources,
-      'luma.gl': resolve('.', './node_modules/luma.gl'),
-      react: resolve('.', './node_modules/react'),
-      // // used by Mapbox
-      // webworkify: 'webworkify-webpack-dropin',
+    // Prefer local dependencies over root
+    modules: [resolve('./node_modules'), resolve('../node_modules')],
+    alias: Object.assign({}, ALIASES, {
+      'website-examples': resolve('../examples/website'),
       // From mapbox-gl-js README. Required for non-browserify bundlers (e.g. webpack):
-      'mapbox-gl$': resolve('./node_modules/mapbox-gl/dist/mapbox-gl.js'),
-      'd3-scale': resolve('.', './node_modules/d3-scale'),
-      rbush: resolve('.', './node_modules/rbush')
-    }
+      'mapbox-gl$': resolve('./node_modules/mapbox-gl/dist/mapbox-gl.js')
+    })
   },
 
   node: {
@@ -83,7 +84,7 @@ const addDevConfig = config => {
   });
 
   return Object.assign(config, {
-
+    mode: 'development',
     devtool: 'source-maps',
 
     plugins: config.plugins.concat([
@@ -98,10 +99,7 @@ const addDevConfig = config => {
 const addProdConfig = config => {
 
   return Object.assign(config, {
-    output: {
-      path: resolve(__dirname, './dist'),
-      filename: 'bundle.js'
-    }
+    mode: 'production'
   });
 };
 

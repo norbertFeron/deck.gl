@@ -34,9 +34,16 @@ Inherits from all [Base Layer](/docs/api-reference/layer.md) properties.
 
 ### Render Options
 
+##### `filled` (Boolean, optional)
+
+* Default: `true`
+
+Whether to fill the polygons (based on the color provided by the
+`getFillColor` accessor.
+
 ##### `extruded` (Boolean, optional)
 
-- Default: `false`
+* Default: `false`
 
 Whether to extrude the polygons (based on the elevations provided by the
 `getElevation` accessor. If set to false, all polygons will be flat, this
@@ -44,7 +51,7 @@ generates less geometry and is faster than simply returning `0` from `getElevati
 
 ##### `wireframe` (Boolean, optional)
 
-- Default: `false`
+* Default: `false`
 
 Whether to generate a line wireframe of the hexagon. The outline will have
 "horizontal" lines closing the top and bottom polygons and a vertical line
@@ -52,7 +59,7 @@ Whether to generate a line wireframe of the hexagon. The outline will have
 
 ##### `elevationScale` (Number, optional)
 
-- Default: `1`
+* Default: `1`
 
 Elevation multiplier. The final elevation is calculated by
   `elevationScale * getElevation(d)`. `elevationScale` is a handy property to scale
@@ -60,7 +67,7 @@ all elevation without updating the data.
 
 ##### `fp64` (Boolean, optional)
 
-- Default: `false`
+* Default: `false`
 
 Whether the layer should be rendered in high-precision 64-bit mode.
 
@@ -70,18 +77,16 @@ Whether the layer should be rendered in high-precision 64-bit mode.
 * Wireframe and solid extrusions are exclusive, you'll need to create two layers
   with the same data if you want a combined rendering effect.
 
-##### `lightSettings` (Object, optional
-
-**EXPERIMENTAL**
+##### `lightSettings` (Object, optional) **EXPERIMENTAL**
 
 This is an object that contains light settings for extruded polygons.
 Be aware that this prop will likely be changed in a future version of deck.gl.
 
 ### Data Accessors
 
-##### `getPolygon` (Function, optional)
+##### `getPolygon` (Function, optional) ![transition-enabled](https://img.shields.io/badge/transition-enabled-green.svg?style=flat-square")
 
-- default: object => object
+* Default: `object => object.polygon`
 
 Like any deck.gl layer, the polygon accepts a data prop which is expected to
 be an iterable container of objects, and an accessor
@@ -89,18 +94,35 @@ that extracts a polygon (simple or complex) from each object.
 
 This accessor returns the polygon corresponding to an object in the `data` stream.
 
-##### `getColor` (Function, optional)
+##### `getFillColor` (Function|Array, optional) ![transition-enabled](https://img.shields.io/badge/transition-enabled-green.svg?style=flat-square")
 
-The fill color for the polygon
+* Default: `[0, 0, 0, 255]`
 
-##### `getElevation` (Function, optional)
+The rgba fill color of each object's polygon, in `r, g, b, [a]`. Each component is in the 0-255 range.
 
-- Default: `object => object.elevation`
+* If an array is provided, it is used as the fill color for all polygons.
+* If a function is provided, it is called on each polygon to retrieve its fill color.
 
-Method called to retrieve the elevation of each object's polygon.
+##### `getLineColor` (Function|Array, optional) ![transition-enabled](https://img.shields.io/badge/transition-enabled-green.svg?style=flat-square")
+
+* Default: `[0, 0, 0, 255]`
+
+The rgba stroke color of each object's polygon, in `r, g, b, [a]`. Each component is in the 0-255 range.
+
+* If an array is provided, it is used as the stroke color for all polygons.
+* If a function is provided, it is called on each object to retrieve its stroke color.
+
+##### `getElevation` (Function|Number, optional) ![transition-enabled](https://img.shields.io/badge/transition-enabled-green.svg?style=flat-square")
+
+* Default: `1000`
+
+The elevation of each object's polygon.
 
 If a cartographic projection mode is used, height will be interpreted as meters,
 otherwise will be in unit coordinates.
+
+* If a number is provided, it is used as the elevation for all polygons.
+* If a function is provided, it is called on each object to retrieve its elevation.
 
 ## Remarks
 
@@ -113,5 +135,5 @@ otherwise will be in unit coordinates.
 
 ## Source
 
-[src/core-layers/primitive-polygon-layer](https://github.com/uber/deck.gl/tree/5.1-release/src/core-layers/primitive-polygon-layer)
+[modules/core/src/core-layers/solid-polygon-layer](https://github.com/uber/deck.gl/tree/master/modules/layers/src/solid-polygon-layer)
 

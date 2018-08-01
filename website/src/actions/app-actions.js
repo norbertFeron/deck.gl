@@ -112,9 +112,15 @@ export const loadData = (owner, source) => {
   };
 };
 
-export const updateMap = viewport => ({type: 'UPDATE_MAP', viewport});
+export const updateMapSize = ({width, height}) => ({type: 'UPDATE_MAP_SIZE', width, height});
+export const updateMapState = viewState => ({type: 'UPDATE_MAP_STATE', viewState});
+
 export const updateMeta = meta => ({type: 'UPDATE_META', meta});
-export const updateParam = (name, value) => ({type: 'UPDATE_PARAM', payload: {name, value}});
+
 export const useParams = params => ({type: 'USE_PARAMS', params});
+export const updateParam = (name, value) => ({type: 'UPDATE_PARAM', payload: {name, value}});
+export const resetParams = params => ({type: 'RESET_PARAMS'});
+
 export const toggleMenu = isOpen => ({type: 'TOGGLE_MENU', isOpen});
+
 export const setHeaderOpacity = opacity => ({type: 'SET_HEADER_OPACITY', opacity});

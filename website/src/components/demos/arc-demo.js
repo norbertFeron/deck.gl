@@ -1,8 +1,9 @@
 import React, {Component} from 'react';
+import autobind from 'autobind-decorator';
 
 import {MAPBOX_STYLES, DATA_URI} from '../../constants/defaults';
 import {readableInteger} from '../../utils/format-utils';
-import ArcOverlay, {inFlowColors, outFlowColors} from '../../../../examples/arc/deckgl-overlay';
+import {App, INITIAL_VIEW_STATE, inFlowColors, outFlowColors} from 'website-examples/arc/app';
 
 const colorRamp = inFlowColors.slice().reverse().concat(outFlowColors)
   .map(color => `rgb(${color.join(',')})`);
@@ -18,15 +19,16 @@ export default class ArcDemo extends Component {
 
   static get parameters() {
     return {
-      lineWidth: {displayName: 'Width', type: 'range', value: 2, step: 0.1, min: 0, max: 10}
+      lineWidth: {displayName: 'Width', type: 'range', value: 1, step: 0.1, min: 0, max: 10}
     };
   }
 
   static get viewport() {
-    return {
-      ...ArcOverlay.defaultViewport,
-      mapStyle: MAPBOX_STYLES.LIGHT
-    };
+    return INITIAL_VIEW_STATE;
+  }
+
+  static get mapStyle() {
+    return MAPBOX_STYLES.LIGHT;
   }
 
   static renderInfo(meta) {
@@ -61,62 +63,19 @@ export default class ArcDemo extends Component {
     );
   }
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      hoveredCounty: null,
-      // Set default selection to San Francisco
-      selectedCounty: props.data ? props.data[362] : null
-    };
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.data !== this.props.data) {
-      this.setState({
-        // Set default selection to San Francisco
-        selectedCounty: nextProps.data[362]
-      });
-    }
-  }
-
-  _onHoverCounty({x, y, object}) {
-    this.setState({x, y, hoveredCounty: object});
-  }
-
-  _onSelectCounty({object}) {
-    this.setState({selectedCounty: object});
-    this.props.onStateChange({sourceName: object.properties.name});
-  }
-
-  _renderTooltip() {
-    const {x, y, hoveredCounty} = this.state;
-    return hoveredCounty && (
-      <div className="tooltip" style={{left: x, top: y}}>
-        {hoveredCounty.properties.name}
-      </div>
-    );
+  @autobind
+  _onSelectCounty(f) {
+    this.props.onStateChange({sourceName: f.properties.name});
   }
 
   render() {
-    const {viewport, params, data} = this.props;
-    const {selectedCounty} = this.state;
-
-    if (!data) {
-      return null;
-    }
+    const {params, ...otherProps} = this.props;
 
     return (
-      <div>
-        <ArcOverlay viewport={viewport}
-          data={data}
-          selectedFeature={selectedCounty}
-          strokeWidth={params.lineWidth.value}
-          onHover={this._onHoverCounty.bind(this)}
-          onClick={this._onSelectCounty.bind(this)} />
-
-        {this._renderTooltip()}
-
-      </div>
+      <App
+        {...otherProps}
+        strokeWidth={params.lineWidth.value}
+        onSelectCounty={this._onSelectCounty} />
     );
   }
 }

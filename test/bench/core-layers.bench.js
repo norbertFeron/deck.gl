@@ -21,12 +21,11 @@
 /* eslint-disable no-console, no-invalid-this */
 import * as data from 'deck.gl/test/data';
 
-import {ScatterplotLayer, PolygonLayer, PathLayer, GeoJsonLayer} from 'deck.gl';
+import {ScatterplotLayer, PolygonLayer, PathLayer, GeoJsonLayer, TextLayer} from 'deck.gl';
 
 import {testInitializeLayer} from '@deck.gl/test-utils';
 
-import SolidPolygonLayer from 'deck.gl/core-layers/solid-polygon-layer/solid-polygon-layer';
-import {SolidPolygonLayer as SolidPolygonLayer2} from 'deck.gl/experimental-layers/src';
+import SolidPolygonLayer from '@deck.gl/layers/solid-polygon-layer/solid-polygon-layer';
 
 // add tests
 export default function coreLayersBench(suite) {
@@ -111,43 +110,11 @@ export default function coreLayersBench(suite) {
       });
       testInitializeLayer({layer});
     })
-    .add('SolidPolygonLayer2#initialize (flat)', () => {
-      const layer = new SolidPolygonLayer2({data: data.choropleths.features});
-      testInitializeLayer({layer});
-    })
-    .add('SolidPolygonLayer2#initialize (extruded)', () => {
-      const layer = new SolidPolygonLayer2({
-        data: data.choropleths.features,
-        extruded: true
-      });
-      testInitializeLayer({layer});
-    })
-    .add('SolidPolygonLayer2#initialize (wireframe)', () => {
-      const layer = new SolidPolygonLayer2({
-        data: data.choropleths.features,
-        extruded: true,
-        wireframe: true
-      });
-      testInitializeLayer({layer});
-    })
-    .add('SolidPolygonLayer2#initialize (flat,fp64)', () => {
-      const layer = new SolidPolygonLayer2({data: data.choropleths.features, fp64: true});
-      testInitializeLayer({layer});
-    })
-    .add('SolidPolygonLayer2#initialize (extruded,fp64)', () => {
-      const layer = new SolidPolygonLayer2({
-        data: data.choropleths.features,
-        extruded: true,
-        fp64: true
-      });
-      testInitializeLayer({layer});
-    })
-    .add('SolidPolygonLayer2#initialize (wireframe,fp64)', () => {
-      const layer = new SolidPolygonLayer2({
-        data: data.choropleths.features,
-        extruded: true,
-        wireframe: true,
-        fp64: true
+    .add('TextLayer#initialize', () => {
+      const layer = new TextLayer({
+        data: data.points,
+        getPosition: d => d.COORDINATES,
+        getText: d => d.LOCATION_NAME
       });
       testInitializeLayer({layer});
     });
@@ -226,7 +193,7 @@ function layerConstructionBench(suite) {
     .add('ScatterplotLayer#construct(separate prop objects)', () => {
       return new ScatterplotLayer(PROPS1, PROPS2, PROPS3);
     })
-    .add('ScatterplotLayer#construct(precomposed prop objects)', () => {
+    .add('ScatterplotLayer#construct(composed prop objects)', () => {
       return new ScatterplotLayer(Object.assign({}, PROPS1, PROPS2, PROPS3));
     });
 }

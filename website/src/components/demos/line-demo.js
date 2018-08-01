@@ -1,7 +1,9 @@
 import React, {Component} from 'react';
 import {readableInteger} from '../../utils/format-utils';
 import {MAPBOX_STYLES, DATA_URI} from '../../constants/defaults';
-import LineOverlay from '../../../../examples/line/deckgl-overlay';
+import {App, INITIAL_VIEW_STATE} from 'website-examples/line/app';
+
+const EMPTY_ARRAY = [];
 
 export default class LineDemo extends Component {
 
@@ -25,10 +27,11 @@ export default class LineDemo extends Component {
   }
 
   static get viewport() {
-    return {
-      ...LineOverlay.defaultViewport,
-      mapStyle: MAPBOX_STYLES.DARK
-    };
+    return INITIAL_VIEW_STATE;
+  }
+
+  static get mapStyle() {
+    return MAPBOX_STYLES.DARK;
   }
 
   static renderInfo(meta) {
@@ -47,52 +50,15 @@ export default class LineDemo extends Component {
     );
   }
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      tooltipLine1: '',
-      tooltipLine2: ''
-    };
-  }
-
-  _onHover({x, y, object}) {
-    let tooltipLine1 = '';
-    let tooltipLine2 = '';
-    if (object) {
-      tooltipLine1 = object.country || object.abbrev;
-      tooltipLine2 = object.name.indexOf('0x') >= 0 ? '' : object.name;
-    }
-    this.setState({x, y, tooltipLine1, tooltipLine2});
-  }
-
-  _renderTooltip() {
-    const {x, y, tooltipLine1, tooltipLine2} = this.state;
-    return tooltipLine1 && (
-      <div className="tooltip" style={{left: x, top: y}}>
-        <div>{ tooltipLine1 }</div>
-        <div>{ tooltipLine2 }</div>
-      </div>
-    );
-  }
-
   render() {
-    const {viewport, params, data} = this.props;
-
-    if (!data) {
-      return null;
-    }
+    const {params, data, ...otherProps} = this.props;
 
     return (
-      <div>
-        <LineOverlay viewport={viewport}
-          flightPaths={data[0]}
-          airports={data[1]}
-          onHover={this._onHover.bind(this)}
-          strokeWidth={params.strokeWidth.value} />
-
-        { this._renderTooltip() }
-
-      </div>
+      <App
+        {...otherProps}
+        flightPaths={data && data[0] || EMPTY_ARRAY}
+        airports={data && data[1] || EMPTY_ARRAY}
+        strokeWidth={params.strokeWidth.value} />
     );
   }
 }

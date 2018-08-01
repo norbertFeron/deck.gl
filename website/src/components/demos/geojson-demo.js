@@ -1,34 +1,7 @@
 import React, {Component} from 'react';
 import {readableInteger} from '../../utils/format-utils';
 import {MAPBOX_STYLES, DATA_URI} from '../../constants/defaults';
-import GeoJsonOverlay from '../../../../examples/geojson/deckgl-overlay';
-
-const COLOR_SCALE = [
-  // negative
-  [65, 182, 196],
-  [127, 205, 187],
-  [199, 233, 180],
-  [237, 248, 177],
-
-  // positive
-  [255, 255, 204],
-  [255, 237, 160],
-  [254, 217, 118],
-  [254, 178, 76],
-  [253, 141, 60],
-  [252, 78, 42],
-  [227, 26, 28],
-  [189, 0, 38],
-  [128, 0, 38]
-];
-
-function colorScale(x) {
-  const i = Math.round(x * 7) + 4;
-  if (x < 0) {
-    return COLOR_SCALE[i] || COLOR_SCALE[0];
-  }
-  return COLOR_SCALE[i] || COLOR_SCALE[COLOR_SCALE.length - 1];
-}
+import {App, INITIAL_VIEW_STATE, COLOR_SCALE} from 'website-examples/geojson/app';
 
 export default class GeoJsonDemo extends Component {
 
@@ -44,18 +17,17 @@ export default class GeoJsonDemo extends Component {
   }
 
   static get viewport() {
-    return {
-      ...GeoJsonOverlay.defaultViewport,
-      mapStyle: MAPBOX_STYLES.LIGHT
-    };
+    return INITIAL_VIEW_STATE;
+  }
+
+  static get mapStyle() {
+    return MAPBOX_STYLES.LIGHT;
   }
 
   static renderInfo(meta) {
 
-    const legendCount = 5;
-    const legends = new Array(legendCount).fill(0).map((d, i) => i / (legendCount - 1) * 2 - 0.5);
-
-    const width = `${100 / legendCount}%`;
+    const legends = COLOR_SCALE.domain();
+    const width = `${100 / legends.length}%`;
 
     return (
       <div>
@@ -66,12 +38,12 @@ export default class GeoJsonDemo extends Component {
         <div className="layout">
           {legends.map((l, i) => (
             <div key={i} className="legend"
-              style={{background: `rgb(${colorScale(l).join(',')})`, width}} />
+              style={{background: `rgb(${COLOR_SCALE(l).join(',')})`, width}} />
           ))}
         </div>
         <div className="layout">
           {legends.map((l, i) => (
-            <div key={i} style={{width}} >{Math.round(l * 100)}%</div>
+            (i % 2 === 0) && <div key={i} style={{width}} >{Math.round(l * 100)}%</div>
           ))}
         </div>
         <p>Data source:&nbsp;
@@ -89,48 +61,9 @@ export default class GeoJsonDemo extends Component {
     );
   }
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      hoveredFeature: null
-    };
-  }
-
-  _onHover({x, y, object}) {
-    this.setState({hoveredFeature: object, x, y});
-  }
-
-  _renderTooltip() {
-    const {x, y, hoveredFeature} = this.state;
-    return hoveredFeature && (
-      <div className="tooltip" style={{top: y, left: x}}>
-        <div><b>Average Property Value &nbsp;</b></div>
-        <div>
-          <div>${readableInteger(hoveredFeature.properties.valuePerParcel)} / parcel</div>
-          <div>${readableInteger(hoveredFeature.properties.valuePerSqm)} / m<sup>2</sup></div>
-        </div>
-        <div><b>Growth</b></div>
-        <div>{Math.round(hoveredFeature.properties.growth * 100)}%</div>
-      </div>
-    );
-  }
-
   render() {
-    const {viewport, data} = this.props;
-
-    if (!data) {
-      return null;
-    }
-
     return (
-      <div>
-        <GeoJsonOverlay viewport={viewport}
-          data={data}
-          colorScale={colorScale}
-          onHover={this._onHover.bind(this)} />
-
-        {this._renderTooltip()}
-      </div>
+      <App {...this.props} />
     );
   }
 }
